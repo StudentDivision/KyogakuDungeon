@@ -931,188 +931,6 @@ button:disabled {
   80% { transform: translateX(5px); }
 }
 
-/* =========================================================
-  スマホ縦画面用：スクロールせず収めるための圧縮調整
-========================================================= */
-
-.window {
-  padding: 8px;
-  border-width: 3px;
-  border-radius: 10px;
-}
-
-#topBar {
-  font-size: 13px;
-  padding: 7px 9px;
-}
-
-#status {
-  font-size: 12px;
-  gap: 4px 10px;
-  padding: 8px 10px;
-}
-
-.statLine {
-  line-height: 1.2;
-}
-
-.barOuter {
-  height: 9px;
-}
-
-#enemyArea {
-  min-height: 0;
-  flex: 0 0 245px;
-  gap: 5px;
-  padding: 8px;
-}
-
-.enemyName {
-  font-size: 17px;
-  line-height: 1.15;
-}
-
-.enemyStage {
-  height: 128px;
-}
-
-#enemyImage {
-  max-width: 128px;
-  max-height: 112px;
-}
-
-.monster {
-  width: 112px;
-  height: 100px;
-}
-
-.enemyMeta {
-  font-size: 12px;
-  line-height: 1.1;
-}
-
-#messageBox {
-  min-height: 0;
-  height: 82px;
-  padding: 10px 12px;
-  font-size: 14px;
-  line-height: 1.45;
-  overflow: hidden;
-}
-
-#quizBox {
-  gap: 6px;
-  padding: 8px;
-}
-
-#category {
-  font-size: 12px;
-  line-height: 1.2;
-}
-
-#question {
-  font-size: 14px;
-  line-height: 1.35;
-}
-
-#timerOuter {
-  height: 10px;
-}
-
-#choices {
-  gap: 6px;
-}
-
-.choiceBtn {
-  min-height: 44px;
-  padding: 7px 10px;
-  font-size: 13px;
-  line-height: 1.25;
-  border-width: 3px;
-}
-
-/* iPhoneなど高さが厳しい端末ではさらに圧縮 */
-@media (max-height: 880px) {
-  #app {
-    gap: 5px;
-    padding: 6px;
-    padding-bottom: calc(6px + var(--safe-bottom));
-  }
-
-  .window {
-    padding: 7px;
-  }
-
-  #status {
-    font-size: 11.5px;
-    gap: 3px 9px;
-  }
-
-  #enemyArea {
-    flex-basis: 220px;
-  }
-
-  .enemyStage {
-    height: 110px;
-  }
-
-  #enemyImage {
-    max-width: 112px;
-    max-height: 96px;
-  }
-
-  .monster {
-    width: 98px;
-    height: 88px;
-  }
-
-  #messageBox {
-    height: 66px;
-    font-size: 13px;
-    line-height: 1.35;
-    padding: 8px 10px;
-  }
-
-  #question {
-    font-size: 13px;
-    line-height: 1.3;
-  }
-
-  .choiceBtn {
-    min-height: 39px;
-    padding: 6px 9px;
-    font-size: 12.5px;
-    line-height: 1.2;
-  }
-}
-
-@media (max-height: 690px) {
-  #enemyArea {
-    min-height: 165px;
-  }
-
-  .enemyStage {
-    height: 125px;
-  }
-
-  .monster {
-    transform: scale(.82);
-  }
-
-  #enemyImage {
-    max-height: 120px;
-  }
-
-  #messageBox {
-    min-height: 72px;
-    font-size: 13px;
-  }
-
-  button {
-    min-height: 48px;
-    font-size: 13px;
-  }
-}
 
   /* =========================================================
   フロア別バトル背景
@@ -1244,7 +1062,83 @@ button:disabled {
     radial-gradient(ellipse at 88% 72%, rgba(60,20,30,.40) 0 18%, transparent 19%);
   opacity: .5;
 }
-  
+
+  /* =========================================================
+  最終上書き：メッセージウィンドウ修正版
+  ※必ず </style> の直前に置く
+========================================================= */
+
+#messageBox {
+  height: auto !important;
+  min-height: 84px !important;
+  max-height: 128px !important;
+  padding: 10px 12px !important;
+  font-size: 13.5px !important;
+  line-height: 1.42 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  white-space: pre-wrap !important;
+  position: relative !important;
+}
+
+/* メッセージ本文側も、右下の▼と被らないようにする */
+#message {
+  padding-right: 22px;
+  white-space: pre-wrap;
+}
+
+/* 高さが狭いスマホでは少しだけ圧縮。ただし隠さない */
+@media (max-height: 880px) {
+  #messageBox {
+    height: auto !important;
+    min-height: 78px !important;
+    max-height: 118px !important;
+    font-size: 13px !important;
+    line-height: 1.38 !important;
+    padding: 9px 11px !important;
+    overflow-y: auto !important;
+  }
+}
+
+@media (max-height: 760px) {
+  #messageBox {
+    min-height: 74px !important;
+    max-height: 108px !important;
+    font-size: 12.5px !important;
+    line-height: 1.34 !important;
+    overflow-y: auto !important;
+  }
+}
+
+  /* =========================================================
+  メッセージウィンドウ最終調整
+========================================================= */
+
+#messageBox {
+  height: auto;
+  min-height: 82px;
+  max-height: 118px;
+  padding: 9px 10px;
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+}
+
+#message {
+  padding-right: 22px;
+  white-space: pre-wrap;
+}
+
+@media (max-height: 760px) {
+  #messageBox {
+    min-height: 76px;
+    max-height: 108px;
+    font-size: 12.5px;
+    line-height: 1.32;
+  }
+}
 </style>
 </head>
 
