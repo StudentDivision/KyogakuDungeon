@@ -1306,6 +1306,379 @@ body.quiz-active #enemyImage {
     font-size: 16px !important;
   }
 }
+
+  /* =========================================================
+  タイトル画面強化：キョウガク・ダンジョン
+========================================================= */
+
+#titleScreen {
+  padding: 14px;
+  justify-content: center;
+  gap: 12px;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255,255,255,.98), transparent 12%),
+    radial-gradient(circle at 18% 20%, rgba(255,255,255,.48), transparent 18%),
+    radial-gradient(circle at 82% 26%, rgba(255,255,255,.42), transparent 20%),
+    linear-gradient(180deg, #9be9ff 0%, #54c4ff 42%, #1d87dc 100%);
+}
+
+#titleScreen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 16% 15%, rgba(255,255,255,.95) 0 2px, transparent 3px),
+    radial-gradient(circle at 74% 13%, rgba(255,255,255,.8) 0 1px, transparent 3px),
+    radial-gradient(circle at 38% 31%, rgba(255,255,255,.72) 0 1px, transparent 3px),
+    linear-gradient(125deg, rgba(255,255,255,.26), transparent 34%, rgba(255,255,255,.15), transparent 70%);
+  opacity: .78;
+  pointer-events: none;
+}
+
+#titleScreen::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -20px;
+  width: 590px;
+  height: 190px;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(ellipse at 13% 72%, rgba(255,255,255,.96) 0 18%, transparent 19%),
+    radial-gradient(ellipse at 31% 63%, rgba(255,255,255,.94) 0 22%, transparent 23%),
+    radial-gradient(ellipse at 52% 73%, rgba(255,255,255,.97) 0 25%, transparent 26%),
+    radial-gradient(ellipse at 73% 62%, rgba(255,255,255,.93) 0 21%, transparent 22%),
+    radial-gradient(ellipse at 89% 73%, rgba(255,255,255,.95) 0 18%, transparent 19%),
+    linear-gradient(180deg, transparent 0%, rgba(255,255,255,.42) 65%, rgba(255,255,255,.80) 100%);
+  opacity: .84;
+  pointer-events: none;
+}
+
+.titleHero {
+  position: relative;
+  z-index: 1;
+  padding: 18px 12px 16px;
+  border: 3px solid rgba(255,255,255,.96);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,.08)),
+    linear-gradient(180deg, rgba(28,108,218,.88), rgba(8,42,156,.92));
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.15),
+    0 6px 0 rgba(0,0,0,.22),
+    0 0 26px rgba(255,255,255,.28);
+  text-align: center;
+  overflow: hidden;
+}
+
+.titleHero::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background:
+    conic-gradient(from 180deg, transparent, rgba(255,255,255,.20), transparent, rgba(255,230,109,.18), transparent);
+  animation: titleShine 5.5s linear infinite;
+  opacity: .7;
+  pointer-events: none;
+}
+
+.titleHero > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 青空と若鷲のCSSアイコン */
+.skyEagleIcon {
+  position: relative;
+  width: 92px;
+  height: 86px;
+  margin: 0 auto 8px;
+  filter: drop-shadow(0 8px 0 rgba(0,0,0,.24));
+  animation: eagleFloat 2.4s ease-in-out infinite;
+}
+
+.skyEagleIcon::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255,255,255,.95) 0 10%, rgba(255,230,109,.92) 11% 17%, transparent 18%),
+    linear-gradient(180deg, rgba(139,233,255,.9), rgba(50,146,230,.78));
+  border: 3px solid rgba(255,255,255,.92);
+  box-shadow: inset 0 0 16px rgba(255,255,255,.35);
+}
+
+.eagleWing {
+  position: absolute;
+  top: 26px;
+  width: 42px;
+  height: 26px;
+  background: linear-gradient(180deg, #704a2c, #2e241d);
+  border: 2px solid rgba(255,255,255,.9);
+  z-index: 3;
+}
+
+.eagleWing.left {
+  left: 1px;
+  transform: rotate(-28deg);
+  border-radius: 90% 10% 80% 20%;
+}
+
+.eagleWing.right {
+  right: 1px;
+  transform: rotate(28deg);
+  border-radius: 10% 90% 20% 80%;
+}
+
+.eagleBody {
+  position: absolute;
+  left: 50%;
+  top: 31px;
+  width: 28px;
+  height: 34px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #5a4030, #241d19);
+  border: 2px solid rgba(255,255,255,.9);
+  border-radius: 48% 48% 55% 55%;
+  z-index: 4;
+}
+
+.eagleHead {
+  position: absolute;
+  left: 50%;
+  top: 21px;
+  width: 24px;
+  height: 22px;
+  transform: translateX(-50%);
+  background: #f5f1dd;
+  border: 2px solid rgba(255,255,255,.95);
+  border-radius: 50%;
+  z-index: 5;
+}
+
+.eagleHead::before,
+.eagleHead::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  width: 4px;
+  height: 4px;
+  background: #111;
+  border-radius: 50%;
+}
+
+.eagleHead::before {
+  left: 6px;
+}
+
+.eagleHead::after {
+  right: 6px;
+}
+
+.eagleBeak {
+  position: absolute;
+  left: 50%;
+  top: 34px;
+  width: 12px;
+  height: 9px;
+  transform: translateX(-50%);
+  background: #ffd15c;
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  z-index: 6;
+}
+
+.mountainPeak {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 62px;
+  height: 32px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #ffffff 0 22%, #6ab6e8 23% 100%);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  opacity: .9;
+  z-index: 2;
+}
+
+.logoSmall {
+  display: inline-block;
+  margin-bottom: 5px;
+  padding: 3px 10px;
+  border: 2px solid rgba(255,255,255,.85);
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(0,28,120,.25);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.55);
+}
+
+.titleMain {
+  display: grid;
+  gap: 2px;
+  text-align: center;
+  font-weight: 900;
+  font-size: clamp(34px, 10vw, 50px);
+  line-height: 1.02;
+  color: var(--yellow);
+  letter-spacing: 2px;
+  text-shadow:
+    0 0 12px rgba(255,255,255,.72),
+    3px 3px 0 #00206e,
+    5px 5px 0 rgba(0,0,0,.35);
+}
+
+.titleMain .questText {
+  color: #ffffff;
+  -webkit-text-stroke: 1px rgba(0,35,130,.85);
+  text-shadow:
+    0 0 10px rgba(139,233,255,.95),
+    3px 3px 0 #0030a8,
+    5px 5px 0 rgba(0,0,0,.30);
+}
+
+.titleCatch {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #ffffff;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.60);
+}
+
+.tapStart {
+  margin-top: 10px;
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-shadow:
+    0 0 8px rgba(255,255,255,.85),
+    2px 2px 0 rgba(0,0,0,.55);
+  animation: tapStartPulse 1.15s ease-in-out infinite;
+}
+
+.titleButtons {
+  position: relative;
+  z-index: 1;
+  gap: 8px;
+}
+
+.titleBtn {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(58,151,255,1), rgba(5,35,170,1));
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.42),
+    inset 0 -8px 14px rgba(0,0,0,.20),
+    0 4px 0 rgba(0,0,0,.36),
+    0 0 12px rgba(255,255,255,.14);
+}
+
+.titleBtn::before {
+  content: "";
+  position: absolute;
+  left: -40%;
+  top: 0;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+  transform: skewX(-18deg);
+  animation: buttonShine 3s ease-in-out infinite;
+}
+
+.titleNote {
+  position: relative;
+  z-index: 1;
+  font-size: 12.5px;
+  line-height: 1.55;
+  background:
+    linear-gradient(180deg, rgba(20,86,190,.9), rgba(8,43,150,.92));
+}
+
+/* タイトル画面アニメーション */
+@keyframes titleShine {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes eagleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes tapStartPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: .45;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes buttonShine {
+  0%, 55% { left: -45%; }
+  75% { left: 115%; }
+  100% { left: 115%; }
+}
+
+/* 低めのスマホではタイトル画面を少し圧縮 */
+@media (max-height: 760px) {
+  #titleScreen {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .titleHero {
+    padding: 12px 10px 10px;
+  }
+
+  .skyEagleIcon {
+    width: 76px;
+    height: 70px;
+    margin-bottom: 4px;
+  }
+
+  .titleMain {
+    font-size: clamp(30px, 9vw, 42px);
+  }
+
+  .titleCatch {
+    font-size: 12px;
+    margin-top: 6px;
+  }
+
+  .tapStart {
+    margin-top: 6px;
+    font-size: 12px;
+  }
+
+  .titleBtn {
+    min-height: 44px;
+    padding: 7px;
+  }
+
+  .titleNote {
+    font-size: 11.5px;
+    line-height: 1.45;
+  }
+}
+
+  .titleEagleImage {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 8px;
+  filter:
+    drop-shadow(0 8px 0 rgba(0,0,0,.25))
+    drop-shadow(0 0 16px rgba(255,255,255,.55));
+  animation: eagleFloat 2.4s ease-in-out infinite;
+}
+  
 </style>
 </head>
 
@@ -1316,31 +1689,38 @@ body.quiz-active #enemyImage {
     <div id="flashText" class="flashText"></div>
   </div>
 
-  <!-- タイトル画面 -->
-  <section id="titleScreen">
-    <div class="window">
-      <div class="titleLogoMark"></div>
-      <div class="titleMain">キョウガク<br>ダンジョン</div>
-      <div class="titleSub">
-        学びの光で、迷いを照らそう。<br>
-        教学を楽しく学べるレトロ風バトル！
+<!-- タイトル画面 -->
+<section id="titleScreen">
+  <div class="titleHero">
+   <img class="titleEagleImage" src="assets/icons/icon-192.png" alt="若鷲アイコン">
+
+    <div class="gameLogo">
+      <div class="logoSmall">若鷲と学びの冒険</div>
+      <div class="titleMain">
+        <span>キョウガク</span>
+        <span class="questText">ダンジョン</span>
       </div>
-      <div class="tapStart">TAP TO LEARN</div>
     </div>
 
-    <div class="window titleButtons">
-      <button id="startBtn" class="primary">はじめる</button>
-      <button id="continueBtn">つづきから</button>
-      <button id="historyBtn">スコア履歴</button>
-      <button id="deleteBtn" class="danger">セーブ削除</button>
+    <div class="titleCatch">
+      教学は、人生、生き方の軌道をつくる。
     </div>
 
-    <div class="window note">
-      操作はかんたん。4択クイズに答えるだけ。<br>
-      正解で攻撃、不正解で敵の攻撃。<br>
-      10体ごとにフロアボスが出現します。
-    </div>
-  </section>
+    <div class="tapStart">TAP START</div>
+  </div>
+
+  <div class="window titleButtons">
+    <button id="startBtn" class="primary titleBtn">はじめる</button>
+    <button id="continueBtn" class="titleBtn">つづきから</button>
+    <button id="historyBtn" class="titleBtn">スコア履歴</button>
+    <button id="deleteBtn" class="danger titleBtn">セーブ削除</button>
+  </div>
+
+  <div class="window note titleNote">
+    4択クイズに答えて、迷いの敵を打ち破ろう。<br>
+    10体ごとにフロアボスが出現します。
+  </div>
+</section>
 
   <!-- 上部情報 -->
 <section id="topBar" class="window">
