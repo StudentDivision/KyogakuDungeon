@@ -1679,39 +1679,40 @@ body.quiz-active #enemyImage {
   animation: eagleFloat 2.4s ease-in-out infinite;
 }
 
-  /* =========================================================
-  敵エリア専用：背景画像表示
-  フロアごとに --enemy-bg が変わる
+/* =========================================================
+  敵エリア専用：背景画像表示（明るめ調整版）
 ========================================================= */
 
 #enemyArea {
   position: relative;
   isolation: isolate;
   background:
-    linear-gradient(180deg, rgba(8, 58, 170, .48), rgba(3, 18, 90, .76)),
-    var(--enemy-bg, linear-gradient(180deg, #58c8ff, #1268d7));
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
+    linear-gradient(180deg, rgba(50,120,220,.16), rgba(20,60,160,.26)),
+    var(--enemy-bg, linear-gradient(180deg, #66cfff, #2a7be8));
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   overflow: hidden;
-  transition:
-    background-image .35s ease,
-    filter .35s ease;
+  transition: background-image .35s ease, filter .35s ease;
+  filter: brightness(1.08) saturate(1.08);
 }
 
-/* 背景の上に淡い光を足して、今の青UIと馴染ませる */
+/* 背景にやわらかい光を足す */
 #enemyArea::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at 50% 34%, rgba(255,255,255,.22), transparent 26%),
-    radial-gradient(ellipse at 50% 88%, rgba(139,233,255,.28), transparent 36%);
+    radial-gradient(circle at 50% 22%, rgba(255,255,255,.28), transparent 24%),
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.12), transparent 20%),
+    radial-gradient(circle at 80% 28%, rgba(255,255,255,.10), transparent 18%),
+    radial-gradient(ellipse at 50% 88%, rgba(139,233,255,.22), transparent 34%);
   pointer-events: none;
 }
 
-/* 敵・文字・HPバーを背景より前に出す */
+/* 文字やHPバーは前面 */
 #enemyArea .enemyName,
 #enemyArea .enemyStage,
 #enemyArea .enemyMeta,
@@ -1720,21 +1721,74 @@ body.quiz-active #enemyImage {
   z-index: 1;
 }
 
-/* ボス戦だけ少しドラマチックにする */
+/* ボス戦背景も暗すぎないように少し明るく */
 #enemyArea.boss-scene {
   background:
-    linear-gradient(180deg, rgba(70, 10, 95, .45), rgba(0, 0, 20, .78)),
-    var(--enemy-bg, linear-gradient(180deg, #4a1d72, #241020));
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0)),
+    linear-gradient(180deg, rgba(80,30,120,.22), rgba(15,10,40,.38)),
+    var(--enemy-bg, linear-gradient(180deg, #5c89ff, #3a47b8));
   box-shadow:
     inset 0 0 0 2px rgba(255,255,255,.10),
-    0 0 22px rgba(255,230,109,.22),
+    0 0 18px rgba(255,230,109,.18),
     0 5px 0 rgba(0,0,0,.24);
+  filter: brightness(1.02) saturate(1.05);
 }
 
 #enemyArea.boss-scene::before {
   background:
-    radial-gradient(circle at 50% 34%, rgba(255,230,109,.26), transparent 24%),
-    radial-gradient(ellipse at 50% 88%, rgba(255,90,80,.22), transparent 34%);
+    radial-gradient(circle at 50% 22%, rgba(255,240,180,.22), transparent 22%),
+    radial-gradient(circle at 50% 84%, rgba(255,180,120,.14), transparent 30%);
+}
+
+/* =========================================================
+  一番後ろの背景を常に青色に固定
+========================================================= */
+
+#app,
+#app.floor-bg-1,
+#app.floor-bg-2,
+#app.floor-bg-3,
+#app.floor-bg-4,
+#app.floor-bg-5,
+#app.floor-bg-6,
+#app.floor-bg-7,
+#app.floor-bg-8,
+#app.floor-bg-9,
+#app.floor-bg-10 {
+  background:
+    radial-gradient(circle at 50% 10%, rgba(255,255,255,.35), transparent 16%),
+    linear-gradient(180deg, #aeeaff 0%, #6fc3ff 40%, #3e8ee8 100%) !important;
+}
+
+#app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(255,255,255,.22), transparent 18%),
+    radial-gradient(circle at 82% 24%, rgba(255,255,255,.18), transparent 16%),
+    linear-gradient(135deg, rgba(255,255,255,.10), transparent 40%);
+  z-index: 0;
+}
+
+#app::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -20px;
+  width: 640px;
+  height: 170px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 15% 72%, rgba(255,255,255,.40) 0 18%, transparent 19%),
+    radial-gradient(ellipse at 35% 66%, rgba(255,255,255,.32) 0 22%, transparent 23%),
+    radial-gradient(ellipse at 55% 74%, rgba(255,255,255,.38) 0 25%, transparent 26%),
+    radial-gradient(ellipse at 75% 65%, rgba(255,255,255,.30) 0 21%, transparent 22%),
+    radial-gradient(ellipse at 90% 74%, rgba(255,255,255,.34) 0 18%, transparent 19%);
+  opacity: .85;
+  z-index: 0;
 }
   
 </style>
