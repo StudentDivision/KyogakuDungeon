@@ -73,14 +73,22 @@ body {
   overflow-y: auto;
 }
 
-  /* =========================================================
-  iPhone縦画面用：クイズ画面を収める調整
+/* =========================================================
+  修正版：文章を隠さず、スマホでも収まりやすくする
 ========================================================= */
 
-.window {
-  padding: 6px 8px;
+/* 画面全体は、切り捨てず必要時だけスクロール可能にする */
+#app {
+  height: auto;
+  min-height: 100svh;
+  padding: 6px;
+  padding-bottom: calc(96px + var(--safe-bottom));
+  gap: 5px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
+/* 上部・ステータスは少しだけ圧縮 */
 #topBar {
   padding: 6px 8px;
   font-size: 13px;
@@ -88,7 +96,7 @@ body {
 
 #status {
   padding: 6px 8px;
-  font-size: 11px;
+  font-size: 11.5px;
   gap: 3px 8px;
 }
 
@@ -96,9 +104,11 @@ body {
   height: 8px;
 }
 
+/* 敵エリアを少しだけ低くする */
 #enemyArea {
-  flex: 0 0 210px;
+  flex: 0 0 auto;
   min-height: 0;
+  height: 205px;
   padding: 7px;
   gap: 4px;
 }
@@ -109,12 +119,12 @@ body {
 }
 
 .enemyStage {
-  height: 105px;
+  height: 98px;
 }
 
 #enemyImage {
-  max-width: 110px;
-  max-height: 95px;
+  max-width: 112px;
+  max-height: 92px;
 }
 
 .monster {
@@ -127,15 +137,19 @@ body {
   line-height: 1.1;
 }
 
+/* ここが重要：メッセージを隠さない */
 #messageBox {
-  height: 58px;
-  min-height: 58px;
-  padding: 8px 10px;
+  height: auto;
+  min-height: 82px;
+  max-height: 116px;
+  padding: 9px 10px;
   font-size: 13px;
   line-height: 1.35;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
+/* クイズ欄も少し圧縮 */
 #quizBox {
   padding: 7px;
   gap: 5px;
@@ -148,7 +162,7 @@ body {
 
 #question {
   font-size: 13px;
-  line-height: 1.25;
+  line-height: 1.28;
 }
 
 #timerOuter {
@@ -160,11 +174,45 @@ body {
 }
 
 .choiceBtn {
-  min-height: 38px;
+  min-height: 40px;
   padding: 6px 9px;
   font-size: 12.5px;
   line-height: 1.2;
   border-width: 3px;
+}
+
+/* 高さがかなり狭いブラウザ用 */
+@media (max-height: 760px) {
+  #enemyArea {
+    height: 185px;
+  }
+
+  .enemyStage {
+    height: 86px;
+  }
+
+  #enemyImage {
+    max-width: 96px;
+    max-height: 78px;
+  }
+
+  .monster {
+    width: 86px;
+    height: 76px;
+  }
+
+  #messageBox {
+    min-height: 78px;
+    max-height: 104px;
+    font-size: 12.5px;
+    line-height: 1.32;
+  }
+
+  .choiceBtn {
+    min-height: 38px;
+    font-size: 12px;
+    line-height: 1.18;
+  }
 }
 
 /* 光の粒と、朝の教室に差し込むような斜め光 */
