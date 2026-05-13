@@ -62,17 +62,13 @@ body {
 #app {
   width: 100%;
   max-width: 480px;
-  min-height: 100vh;
-  padding: 10px;
-  padding-bottom: calc(10px + var(--safe-bottom));
-  background:
-    radial-gradient(circle at 50% 7%, rgba(255,255,255,.92), transparent 12%),
-    radial-gradient(circle at 18% 17%, rgba(255,255,255,.46), transparent 17%),
-    radial-gradient(circle at 83% 24%, rgba(255,255,255,.38), transparent 18%),
-    linear-gradient(180deg, #92e3ff 0%, #56c1fb 42%, #1f86da 100%);
+  height: 100dvh;
+  min-height: 100dvh;
+  padding: 7px;
+  padding-bottom: calc(7px + var(--safe-bottom));
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   position: relative;
   overflow: hidden;
 }
@@ -297,6 +293,19 @@ button:disabled {
   gap: 8px;
   align-items: center;
   font-size: 13px;
+}
+
+#topBar {
+  grid-template-columns: 1fr auto auto;
+}
+
+.miniBtn {
+  width: auto;
+  min-height: 30px;
+  padding: 4px 9px;
+  font-size: 12px;
+  border-width: 2px;
+  border-radius: 8px;
 }
 
 #status {
@@ -780,6 +789,161 @@ button:disabled {
   80% { transform: translateX(5px); }
 }
 
+/* =========================================================
+  スマホ縦画面用：スクロールせず収めるための圧縮調整
+========================================================= */
+
+.window {
+  padding: 8px;
+  border-width: 3px;
+  border-radius: 10px;
+}
+
+#topBar {
+  font-size: 13px;
+  padding: 7px 9px;
+}
+
+#status {
+  font-size: 12px;
+  gap: 4px 10px;
+  padding: 8px 10px;
+}
+
+.statLine {
+  line-height: 1.2;
+}
+
+.barOuter {
+  height: 9px;
+}
+
+#enemyArea {
+  min-height: 0;
+  flex: 0 0 245px;
+  gap: 5px;
+  padding: 8px;
+}
+
+.enemyName {
+  font-size: 17px;
+  line-height: 1.15;
+}
+
+.enemyStage {
+  height: 128px;
+}
+
+#enemyImage {
+  max-width: 128px;
+  max-height: 112px;
+}
+
+.monster {
+  width: 112px;
+  height: 100px;
+}
+
+.enemyMeta {
+  font-size: 12px;
+  line-height: 1.1;
+}
+
+#messageBox {
+  min-height: 0;
+  height: 82px;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  overflow: hidden;
+}
+
+#quizBox {
+  gap: 6px;
+  padding: 8px;
+}
+
+#category {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+#question {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+#timerOuter {
+  height: 10px;
+}
+
+#choices {
+  gap: 6px;
+}
+
+.choiceBtn {
+  min-height: 44px;
+  padding: 7px 10px;
+  font-size: 13px;
+  line-height: 1.25;
+  border-width: 3px;
+}
+
+/* iPhoneなど高さが厳しい端末ではさらに圧縮 */
+@media (max-height: 880px) {
+  #app {
+    gap: 5px;
+    padding: 6px;
+    padding-bottom: calc(6px + var(--safe-bottom));
+  }
+
+  .window {
+    padding: 7px;
+  }
+
+  #status {
+    font-size: 11.5px;
+    gap: 3px 9px;
+  }
+
+  #enemyArea {
+    flex-basis: 220px;
+  }
+
+  .enemyStage {
+    height: 110px;
+  }
+
+  #enemyImage {
+    max-width: 112px;
+    max-height: 96px;
+  }
+
+  .monster {
+    width: 98px;
+    height: 88px;
+  }
+
+  #messageBox {
+    height: 66px;
+    font-size: 13px;
+    line-height: 1.35;
+    padding: 8px 10px;
+  }
+
+  #question {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  .choiceBtn {
+    min-height: 39px;
+    padding: 6px 9px;
+    font-size: 12.5px;
+    line-height: 1.2;
+  }
+}
+
 @media (max-height: 690px) {
   #enemyArea {
     min-height: 165px;
@@ -844,14 +1008,15 @@ button:disabled {
   </section>
 
   <!-- 上部情報 -->
-  <section id="topBar" class="window">
-    <div>
-      <span class="gold">希望の勇者</span>
-      <span id="floorText"> 第1層</span>
-    </div>
-    <div id="scoreText">0点</div>
-  </section>
-
+<section id="topBar" class="window">
+  <div>
+    <span class="gold">希望の勇者</span>
+    <span id="floorText"> 第1層</span>
+  </div>
+  <div id="scoreText">0点</div>
+  <button id="backTitleBtn" class="miniBtn">中断</button>
+</section>
+  
   <!-- ステータス -->
   <section id="status" class="window">
     <div class="statLine"><span>Lv</span><span id="levelText">1</span></div>
@@ -997,6 +1162,7 @@ const closeOverlayBtn = $("closeOverlayBtn");
 
 const flashLayer = $("flashLayer");
 const flashText = $("flashText");
+const backTitleBtn = $("backTitleBtn");
 
 /* =========================================================
   保存キー
@@ -2161,6 +2327,21 @@ closeOverlayBtn.addEventListener("click", () => {
   historyList.classList.add("hidden");
   titleScreen.classList.remove("hidden");
   updateUI();
+});
+
+  backTitleBtn.addEventListener("click", () => {
+  initAudio();
+  sfx("select");
+
+  const ok = confirm("現在の進行をセーブして、タイトルへ戻りますか？");
+
+  if (!ok) return;
+
+  clearInterval(quizTimer);
+  isAnswering = false;
+  saveGame();
+
+  location.reload();
 });
 
 /* =========================================================
