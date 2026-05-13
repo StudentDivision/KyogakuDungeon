@@ -1138,6 +1138,72 @@ button:disabled {
     line-height: 1.32;
   }
 }
+
+  /* =========================================================
+  クイズ中はメッセージ欄を畳んで1画面化
+========================================================= */
+
+body.quiz-active #messageBox {
+  display: none;
+}
+
+/* クイズ中は敵エリアと選択肢を収まりやすくする */
+body.quiz-active #enemyArea {
+  height: 210px;
+  min-height: 0;
+}
+
+body.quiz-active .enemyStage {
+  height: 110px;
+}
+
+body.quiz-active #enemyImage {
+  max-width: 128px;
+  max-height: 105px;
+}
+
+body.quiz-active #quizBox {
+  gap: 5px;
+  padding: 7px;
+}
+
+body.quiz-active #question {
+  font-size: 13px;
+  line-height: 1.28;
+}
+
+body.quiz-active #choices {
+  gap: 5px;
+}
+
+body.quiz-active .choiceBtn {
+  min-height: 42px;
+  padding: 6px 9px;
+  font-size: 12.5px;
+  line-height: 1.2;
+}
+
+/* Safari/LINE内ブラウザなど高さが狭い時 */
+@media (max-height: 760px) {
+  body.quiz-active #enemyArea {
+    height: 185px;
+  }
+
+  body.quiz-active .enemyStage {
+    height: 88px;
+  }
+
+  body.quiz-active #enemyImage {
+    max-width: 105px;
+    max-height: 82px;
+  }
+
+  body.quiz-active .choiceBtn {
+    min-height: 38px;
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+}
 </style>
 </head>
 
@@ -1863,6 +1929,8 @@ let typing = false;
 let skipTyping = false;
 
 function showMessage(text) {
+  document.body.classList.remove("quiz-active");
+  
   return new Promise(async (resolve) => {
     messageResolve = resolve;
     fullMessageText = text;
@@ -2150,6 +2218,8 @@ function prepareQuiz(quiz) {
 }
 
 function startQuestion() {
+  document.body.classList.add("quiz-active");
+  
   currentQuiz = prepareQuiz(getNextQuiz());
   isAnswering = true;
 
