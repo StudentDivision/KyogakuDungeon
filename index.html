@@ -59,18 +59,112 @@ body {
   背景：教育・学び・希望を感じる清潔な青空
 ========================================================= */
 
-#app {
+  #app {
   width: 100%;
   max-width: 480px;
-  height: 100dvh;
-  min-height: 100dvh;
-  padding: 7px;
-  padding-bottom: calc(7px + var(--safe-bottom));
+  min-height: 100svh;
+  padding: 6px;
+  padding-bottom: calc(96px + var(--safe-bottom));
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+  /* =========================================================
+  iPhone縦画面用：クイズ画面を収める調整
+========================================================= */
+
+.window {
+  padding: 6px 8px;
+}
+
+#topBar {
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+#status {
+  padding: 6px 8px;
+  font-size: 11px;
+  gap: 3px 8px;
+}
+
+.barOuter {
+  height: 8px;
+}
+
+#enemyArea {
+  flex: 0 0 210px;
+  min-height: 0;
+  padding: 7px;
+  gap: 4px;
+}
+
+.enemyName {
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.enemyStage {
+  height: 105px;
+}
+
+#enemyImage {
+  max-width: 110px;
+  max-height: 95px;
+}
+
+.monster {
+  width: 96px;
+  height: 86px;
+}
+
+.enemyMeta {
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+#messageBox {
+  height: 58px;
+  min-height: 58px;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.35;
   overflow: hidden;
+}
+
+#quizBox {
+  padding: 7px;
+  gap: 5px;
+}
+
+#category {
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+#question {
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+#timerOuter {
+  height: 8px;
+}
+
+#choices {
+  gap: 5px;
+}
+
+.choiceBtn {
+  min-height: 38px;
+  padding: 6px 9px;
+  font-size: 12.5px;
+  line-height: 1.2;
+  border-width: 3px;
 }
 
 /* 光の粒と、朝の教室に差し込むような斜め光 */
