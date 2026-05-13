@@ -1796,11 +1796,14 @@ body.quiz-active #enemyImage {
 
 <body>
 
+<audio id="titleBgm" src="assets/audio/title.mp3" loop preload="auto"></audio>
+
 <audio id="battleBgm1" src="assets/audio/battle_01.mp3" loop preload="auto"></audio>
 <audio id="battleBgm2" src="assets/audio/battle_02.mp3" loop preload="auto"></audio>
 <audio id="battleBgm3" src="assets/audio/battle_03.mp3" loop preload="auto"></audio>
 <audio id="battleBgm4" src="assets/audio/battle_04.mp3" loop preload="auto"></audio>
 <audio id="battleBgm5" src="assets/audio/battle_05.mp3" loop preload="auto"></audio>
+
 <audio id="bossBgm" src="assets/audio/boss.mp3" loop preload="auto"></audio>
 <audio id="clearBgm" src="assets/audio/clear.mp3" loop preload="auto"></audio>
   
@@ -2002,6 +2005,7 @@ const flashLayer = $("flashLayer");
 const flashText = $("flashText");
 const backTitleBtn = $("backTitleBtn");
 
+const titleBgm = $("titleBgm");
 const battleBgm1 = $("battleBgm1");
 const battleBgm2 = $("battleBgm2");
 const battleBgm3 = $("battleBgm3");
@@ -2234,21 +2238,9 @@ function sfx(type) {
 let currentMusic = null;
 let musicVolume = 0.32;
 
-function getBattleBgmByFloor() {
-  const battleList = [
-    battleBgm1,
-    battleBgm2,
-    battleBgm3,
-    battleBgm4,
-    battleBgm5
-  ];
-
-  const index = (player.floor - 1) % battleList.length;
-  return battleList[index];
-}
-
-function setupMusicVolume() {
-  [
+function getAllMusicTracks() {
+  return [
+    titleBgm,
     battleBgm1,
     battleBgm2,
     battleBgm3,
@@ -2256,21 +2248,19 @@ function setupMusicVolume() {
     battleBgm5,
     bossBgm,
     clearBgm
-  ].forEach(audio => {
-    if (audio) audio.volume = musicVolume;
+  ];
+}
+
+function setupMusicVolume() {
+  getAllMusicTracks().forEach(audio => {
+    if (!audio) return;
+    audio.volume = musicVolume;
+    audio.loop = true; // 念のためJS側でもループ指定
   });
 }
 
 function stopAllMusic() {
-  [
-    battleBgm1,
-    battleBgm2,
-    battleBgm3,
-    battleBgm4,
-    battleBgm5,
-    bossBgm,
-    clearBgm
-  ].forEach(audio => {
+  getAllMusicTracks().forEach(audio => {
     if (!audio) return;
     audio.pause();
     audio.currentTime = 0;
@@ -2284,6 +2274,7 @@ function playMusic(audio) {
 
   setupMusicVolume();
 
+  // すでに同じ曲が再生中なら何もしない
   if (currentMusic === audio && !audio.paused) return;
 
   stopAllMusic();
@@ -2294,6 +2285,23 @@ function playMusic(audio) {
   audio.play().catch(() => {
     console.log("BGMは最初のタップ後に再生されます。");
   });
+}
+
+function getBattleBgmByFloor() {
+  const battleList = [
+    battleBgm1,
+    battleBgm2,
+    battleBgm3,
+    battleBgm4,
+    battleBgm5
+  ];
+
+  const index = (player.floor - 1) % battleList.length;
+  return battleList[index];
+}
+
+function playTitleBgm() {
+  playMusic(titleBgm);
 }
 
 function playBattleBgm() {
@@ -3083,6 +3091,11 @@ async function continueGame() {
   イベント登録
 ========================================================= */
 
+titleScreen.addEventListener("click", () => {
+  initAudio();
+  playTitleBgm();
+}, { once: true });
+
 startBtn.addEventListener("click", startNewGame);
 continueBtn.addEventListener("click", continueGame);
 historyBtn.addEventListener("click", showHistory);
@@ -3105,6 +3118,8 @@ closeOverlayBtn.addEventListener("click", () => {
   resultOverlay.classList.add("hidden");
   historyList.classList.add("hidden");
   titleScreen.classList.remove("hidden");
+
+  playTitleBgm();
   updateUI();
 });
 
