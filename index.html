@@ -1204,6 +1204,108 @@ body.quiz-active .choiceBtn {
     padding: 5px 8px;
   }
 }
+
+  /* =========================================================
+  敵ウィンドウ固定サイズ：小さめで統一
+========================================================= */
+
+#enemyArea {
+  flex: 0 0 220px !important;
+  height: 220px !important;
+  min-height: 220px !important;
+  max-height: 220px !important;
+  padding: 7px !important;
+  gap: 4px !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+.enemyName {
+  font-size: 17px !important;
+  line-height: 1.15 !important;
+  margin: 0 !important;
+}
+
+.enemyStage {
+  height: 118px !important;
+  min-height: 118px !important;
+  max-height: 118px !important;
+}
+
+#enemyImage {
+  max-width: 130px !important;
+  max-height: 108px !important;
+  object-fit: contain !important;
+}
+
+.monster {
+  width: 108px !important;
+  height: 96px !important;
+}
+
+.enemyMeta {
+  font-size: 12px !important;
+  line-height: 1.1 !important;
+}
+
+/* 敵HPバーの幅も固定気味にして見た目を安定させる */
+#enemyArea .barOuter {
+  width: 72% !important;
+  max-width: 270px !important;
+  height: 9px !important;
+}
+
+/* クイズ中でも敵ウィンドウの高さを変えない */
+body.quiz-active #enemyArea {
+  flex: 0 0 220px !important;
+  height: 220px !important;
+  min-height: 220px !important;
+  max-height: 220px !important;
+}
+
+body.quiz-active .enemyStage {
+  height: 118px !important;
+  min-height: 118px !important;
+  max-height: 118px !important;
+}
+
+body.quiz-active #enemyImage {
+  max-width: 130px !important;
+  max-height: 108px !important;
+}
+
+/* 高さが狭いスマホでは、敵欄だけ少し小さく固定 */
+@media (max-height: 760px) {
+  #enemyArea,
+  body.quiz-active #enemyArea {
+    flex-basis: 200px !important;
+    height: 200px !important;
+    min-height: 200px !important;
+    max-height: 200px !important;
+  }
+
+  .enemyStage,
+  body.quiz-active .enemyStage {
+    height: 100px !important;
+    min-height: 100px !important;
+    max-height: 100px !important;
+  }
+
+  #enemyImage,
+  body.quiz-active #enemyImage {
+    max-width: 112px !important;
+    max-height: 92px !important;
+  }
+
+  .monster {
+    width: 96px !important;
+    height: 86px !important;
+  }
+
+  .enemyName {
+    font-size: 16px !important;
+  }
+}
 </style>
 </head>
 
