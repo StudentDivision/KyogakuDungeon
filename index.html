@@ -1412,6 +1412,23 @@ let questionDeck = [];
 let challengeDeck = [];
 
 /* =========================================================
+  フロア背景切り替え
+========================================================= */
+
+function updateFloorBackground() {
+  const bgCount = 10;
+
+  // floor が 1〜10ならそのまま、11以降はまた1に戻る
+  const bgNumber = ((player.floor - 1) % bgCount) + 1;
+
+  for (let i = 1; i <= bgCount; i++) {
+    app.classList.remove(`floor-bg-${i}`);
+  }
+
+  app.classList.add(`floor-bg-${bgNumber}`);
+}
+
+/* =========================================================
   敵データ
   image に画像パスを入れると画像表示になります。
   例：image: "assets/images/mayoi_seed.png"
@@ -1952,6 +1969,7 @@ messageBox.addEventListener("click", () => {
 ========================================================= */
 
 function updateUI() {
+  updateFloorBackground();
   floorText.textContent = ` 第${player.floor}層`;
   scoreText.textContent = `${player.score}点`;
 
@@ -2353,6 +2371,7 @@ async function defeatEnemy() {
 
   if (currentEnemy.boss) {
     player.floor++;
+    updateFloorBackground();
     await showMessage(`フロアボスを たおした！\n第${player.floor}層へ すすみます。`);
   }
 
