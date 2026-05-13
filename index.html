@@ -1790,6 +1790,75 @@ body.quiz-active #enemyImage {
   opacity: .85;
   z-index: 0;
 }
+
+/* =========================================================
+  タイトル画面：TAP START → メニュー表示
+========================================================= */
+
+.tapStartBtn {
+  display: block;
+  width: min(82%, 360px);
+  margin: 18px auto 0;
+  min-height: 76px;
+  border: 4px solid rgba(255,255,255,.95);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.32), rgba(255,255,255,.08)),
+    linear-gradient(180deg, #2f8cff, #082aa8);
+  color: var(--yellow);
+  font-size: clamp(22px, 7vw, 34px);
+  font-weight: 900;
+  letter-spacing: 4px;
+  text-shadow:
+    0 0 12px rgba(255,255,255,.85),
+    3px 3px 0 rgba(0,0,0,.55);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.45),
+    inset 0 -10px 18px rgba(0,0,0,.20),
+    0 6px 0 rgba(0,0,0,.30),
+    0 0 24px rgba(255,255,255,.20);
+  animation: tapStartGlow 1.25s ease-in-out infinite;
+}
+
+.tapStartBtn:active {
+  transform: translateY(4px);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.35),
+    inset 0 -8px 14px rgba(0,0,0,.18),
+    0 2px 0 rgba(0,0,0,.30);
+}
+
+@keyframes tapStartGlow {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: .72;
+    filter: brightness(1.22);
+  }
+}
+
+/* メニュー出現演出 */
+.titleButtons {
+  animation: titleMenuIn .28s ease-out;
+}
+
+@keyframes titleMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* メニュー表示後はTAP STARTを消す */
+body.title-menu-open .tapStartBtn {
+  display: none;
+}
   
 </style>
 </head>
@@ -1830,15 +1899,15 @@ body.quiz-active #enemyImage {
       教学は、人生、生き方の軌道をつくる。
     </div>
 
-    <div class="tapStart">TAP START</div>
+    <button id="tapStartBtn" class="tapStartBtn">TAP START</button>
   </div>
 
-  <div class="window titleButtons">
-    <button id="startBtn" class="primary titleBtn">はじめる</button>
-    <button id="continueBtn" class="titleBtn">つづきから</button>
-    <button id="historyBtn" class="titleBtn">スコア履歴</button>
-    <button id="deleteBtn" class="danger titleBtn">セーブ削除</button>
-  </div>
+<div id="titleMenu" class="window titleButtons hidden">
+  <button id="startBtn" class="primary titleBtn">はじめる</button>
+  <button id="continueBtn" class="titleBtn">つづきから</button>
+  <button id="historyBtn" class="titleBtn">スコア履歴</button>
+  <button id="deleteBtn" class="danger titleBtn">セーブ削除</button>
+</div>
 
   <div class="window note titleNote">
     4択クイズに答えて、迷いの敵を打ち破ろう。<br>
@@ -1960,6 +2029,8 @@ function nowText() {
 const app = $("app");
 
 const titleScreen = $("titleScreen");
+const tapStartBtn = $("tapStartBtn");
+const titleMenu = $("titleMenu");
 const startBtn = $("startBtn");
 const continueBtn = $("continueBtn");
 const historyBtn = $("historyBtn");
@@ -2269,18 +2340,29 @@ function stopAllMusic() {
   currentMusic = null;
 }
 
-function playMusic(audio) {
+function playMusic(audio, restart = false) {
   if (!audio) return;
 
   setupMusicVolume();
 
-  // すでに同じ曲が再生中なら何もしない
-  if (currentMusic === audio && !audio.paused) return;
+  // 同じ曲がすでに再生中なら、そのまま流し続ける
+  if (currentMusic === audio && !audio.paused && !restart) {
+    return;
+  }
 
-  stopAllMusic();
+  // 別の曲に切り替える時だけ、他の曲を止める
+  getAllMusicTracks().forEach(track => {
+    if (!track || track === audio) return;
+    track.pause();
+    track.currentTime = 0;
+  });
 
   currentMusic = audio;
-  audio.currentTime = 0;
+
+  // restart=true の時だけ最初から再生
+  if (restart) {
+    audio.currentTime = 0;
+  }
 
   audio.play().catch(() => {
     console.log("BGMは最初のタップ後に再生されます。");
@@ -3091,10 +3173,14 @@ async function continueGame() {
   イベント登録
 ========================================================= */
 
-titleScreen.addEventListener("click", () => {
+tapStartBtn.addEventListener("click", () => {
   initAudio();
+  sfx("select");
   playTitleBgm();
-}, { once: true });
+
+  document.body.classList.add("title-menu-open");
+  titleMenu.classList.remove("hidden");
+});
 
 startBtn.addEventListener("click", startNewGame);
 continueBtn.addEventListener("click", continueGame);
@@ -3113,30 +3199,38 @@ deleteBtn.addEventListener("click", () => {
 });
 
 closeOverlayBtn.addEventListener("click", () => {
-  stopAllMusic();
-  
   resultOverlay.classList.add("hidden");
   historyList.classList.add("hidden");
   titleScreen.classList.remove("hidden");
+
+  document.body.classList.add("title-menu-open");
+  titleMenu.classList.remove("hidden");
 
   playTitleBgm();
   updateUI();
 });
 
-  backTitleBtn.addEventListener("click", () => {
+backTitleBtn.addEventListener("click", () => {
   initAudio();
   sfx("select");
 
   const ok = confirm("現在の進行をセーブして、タイトルへ戻りますか？");
-
   if (!ok) return;
 
   clearInterval(quizTimer);
   isAnswering = false;
   saveGame();
-  stopAllMusic();
 
-  location.reload();
+  quizBox.classList.add("hidden");
+  resultOverlay.classList.add("hidden");
+  historyList.classList.add("hidden");
+  titleScreen.classList.remove("hidden");
+
+  document.body.classList.add("title-menu-open");
+  titleMenu.classList.remove("hidden");
+
+  playTitleBgm();
+  updateUI();
 });
 
 /* =========================================================
