@@ -1065,6 +1065,138 @@ button:disabled {
     font-size: 13px;
   }
 }
+
+  /* =========================================================
+  フロア別バトル背景
+  #app に floor-bg-1 ～ floor-bg-10 を付けて切り替える
+========================================================= */
+
+/* 第1層：青空と希望 */
+#app.floor-bg-1 {
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255,255,255,.85), transparent 12%),
+    radial-gradient(circle at 20% 18%, rgba(255,255,255,.42), transparent 16%),
+    linear-gradient(180deg, #8addff 0%, #48b7f8 45%, #1676d2 100%);
+}
+
+/* 第2層：夕焼けの学び道 */
+#app.floor-bg-2 {
+  background:
+    radial-gradient(circle at 75% 12%, rgba(255,245,190,.8), transparent 14%),
+    radial-gradient(circle at 25% 30%, rgba(255,180,120,.28), transparent 20%),
+    linear-gradient(180deg, #ffb46e 0%, #f06b7a 48%, #4b3f9c 100%);
+}
+
+/* 第3層：若葉の森 */
+#app.floor-bg-3 {
+  background:
+    radial-gradient(circle at 40% 12%, rgba(255,255,210,.55), transparent 13%),
+    radial-gradient(circle at 20% 80%, rgba(97,210,124,.35), transparent 22%),
+    radial-gradient(circle at 82% 78%, rgba(55,160,92,.35), transparent 24%),
+    linear-gradient(180deg, #8ee8ff 0%, #45b883 50%, #17633f 100%);
+}
+
+/* 第4層：海辺と風 */
+#app.floor-bg-4 {
+  background:
+    radial-gradient(circle at 55% 10%, rgba(255,255,255,.75), transparent 12%),
+    radial-gradient(ellipse at 50% 85%, rgba(255,255,255,.45), transparent 28%),
+    linear-gradient(180deg, #70d9ff 0%, #2198e6 45%, #0068bd 100%);
+}
+
+/* 第5層：雪山の試練 */
+#app.floor-bg-5 {
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255,255,255,.9), transparent 12%),
+    radial-gradient(circle at 20% 36%, rgba(220,245,255,.45), transparent 20%),
+    radial-gradient(circle at 82% 42%, rgba(255,255,255,.38), transparent 20%),
+    linear-gradient(180deg, #bff2ff 0%, #6caeea 50%, #325fa8 100%);
+}
+
+/* 第6層：星空の思索 */
+#app.floor-bg-6 {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255,255,255,.85) 0 1px, transparent 2px),
+    radial-gradient(circle at 70% 24%, rgba(255,255,255,.75) 0 1px, transparent 2px),
+    radial-gradient(circle at 50% 8%, rgba(160,200,255,.35), transparent 18%),
+    linear-gradient(180deg, #263fbb 0%, #13185f 52%, #050924 100%);
+}
+
+/* 第7層：雲海と高空 */
+#app.floor-bg-7 {
+  background:
+    radial-gradient(circle at 50% 10%, rgba(255,255,255,.75), transparent 13%),
+    radial-gradient(ellipse at 20% 74%, rgba(255,255,255,.55), transparent 24%),
+    radial-gradient(ellipse at 80% 78%, rgba(255,255,255,.45), transparent 24%),
+    linear-gradient(180deg, #77d8ff 0%, #5aaee9 44%, #5372d6 100%);
+}
+
+/* 第8層：火山と情熱 */
+#app.floor-bg-8 {
+  background:
+    radial-gradient(circle at 50% 15%, rgba(255,218,130,.35), transparent 18%),
+    radial-gradient(circle at 25% 82%, rgba(255,92,52,.35), transparent 22%),
+    radial-gradient(circle at 78% 82%, rgba(255,180,70,.28), transparent 20%),
+    linear-gradient(180deg, #4a1e6b 0%, #8b243c 48%, #2a1024 100%);
+}
+
+/* 第9層：光の神殿 */
+#app.floor-bg-9 {
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255,255,255,.95), transparent 14%),
+    radial-gradient(circle at 22% 28%, rgba(255,230,120,.28), transparent 20%),
+    radial-gradient(circle at 78% 32%, rgba(139,233,255,.30), transparent 20%),
+    linear-gradient(180deg, #c9f7ff 0%, #6fbdf5 42%, #3554c9 100%);
+}
+
+/* 第10層：希望の空 */
+#app.floor-bg-10 {
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255,255,255,.95), transparent 13%),
+    radial-gradient(circle at 25% 25%, rgba(255,230,109,.35), transparent 20%),
+    radial-gradient(circle at 78% 28%, rgba(139,233,255,.35), transparent 20%),
+    linear-gradient(180deg, #9ff0ff 0%, #4ebdff 40%, #1b86df 100%);
+}
+
+/* フロア背景ごとの雲・光の共通装飾 */
+#app.floor-bg-1::after,
+#app.floor-bg-2::after,
+#app.floor-bg-3::after,
+#app.floor-bg-4::after,
+#app.floor-bg-5::after,
+#app.floor-bg-6::after,
+#app.floor-bg-7::after,
+#app.floor-bg-8::after,
+#app.floor-bg-9::after,
+#app.floor-bg-10::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -18px;
+  width: 580px;
+  height: 170px;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(ellipse at 16% 72%, rgba(255,255,255,.72) 0 18%, transparent 19%),
+    radial-gradient(ellipse at 34% 64%, rgba(255,255,255,.62) 0 22%, transparent 23%),
+    radial-gradient(ellipse at 52% 72%, rgba(255,255,255,.70) 0 24%, transparent 25%),
+    radial-gradient(ellipse at 72% 64%, rgba(255,255,255,.62) 0 20%, transparent 21%),
+    radial-gradient(ellipse at 88% 72%, rgba(255,255,255,.70) 0 18%, transparent 19%);
+  opacity: .46;
+  pointer-events: none;
+}
+
+/* 火山フロアだけ雲を暗めに */
+#app.floor-bg-8::after {
+  background:
+    radial-gradient(ellipse at 16% 72%, rgba(60,20,30,.40) 0 18%, transparent 19%),
+    radial-gradient(ellipse at 34% 64%, rgba(255,150,80,.22) 0 22%, transparent 23%),
+    radial-gradient(ellipse at 52% 72%, rgba(60,20,30,.40) 0 24%, transparent 25%),
+    radial-gradient(ellipse at 72% 64%, rgba(255,150,80,.22) 0 20%, transparent 21%),
+    radial-gradient(ellipse at 88% 72%, rgba(60,20,30,.40) 0 18%, transparent 19%);
+  opacity: .5;
+}
+  
 </style>
 </head>
 
