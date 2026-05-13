@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>希望のクイズバトル</title>
+<style>
+/* =========================================================
+  レトロRPG風 教学クイズバトルゲーム
+  見た目強化版
+  HTML / CSS / JavaScript 1ファイル完結
+========================================================= */
+
+:root {
+  --blue: #061a9b;
+  --blue2: #020a4f;
+  --deep: #01031f;
+  --white: #ffffff;
+  --yellow: #ffe66d;
+  --gold: #ffd15c;
+  --cyan: #8be9ff;
+  --red: #ff6464;
+  --green: #78ff9a;
+  --purple: #b18cff;
+  --black: #050505;
+  --shadow: rgba(0,0,0,.45);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: #000;
+  color: var(--white);
+  font-family: system-ui, "Hiragino Sans", "Yu Gothic", "Meiryo", monospace;
+  overflow-x: hidden;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+}
+
+/* =========================================================
+  背景：教育・学び・希望を感じる清潔な青空
+========================================================= */
+
+#app {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  padding: 10px;
+  padding-bottom: calc(10px + var(--safe-bottom));
+  background:
+    radial-gradient(circle at 50% 7%, rgba(255,255,255,.92), transparent 12%),
+    radial-gradient(circle at 18% 17%, rgba(255,255,255,.46), transparent 17%),
+    radial-gradient(circle at 83% 24%, rgba(255,255,255,.38), transparent 18%),
+    linear-gradient(180deg, #92e3ff 0%, #56c1fb 42%, #1f86da 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 光の粒と、朝の教室に差し込むような斜め光 */
+#app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 16% 14%, rgba(255,255,255,.95) 0 2px, transparent 3px),
+    radial-gradient(circle at 74% 13%, rgba(255,255,255,.78) 0 1px, transparent 3px),
+    radial-gradient(circle at 38% 31%, rgba(255,255,255,.68) 0 1px, transparent 3px),
+    radial-gradient(circle at 86% 44%, rgba(255,255,255,.68) 0 2px, transparent 4px),
+    linear-gradient(120deg, rgba(255,255,255,.22), transparent 36%, rgba(255,255,255,.13), transparent 72%);
+  opacity: .62;
+  pointer-events: none;
+}
+
+/* 下部の白い雲。UIの邪魔をしないよう淡く配置 */
+#app::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -20px;
+  width: 570px;
+  height: 185px;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(ellipse at 14% 72%, rgba(255,255,255,.94) 0 18%, transparent 19%),
+    radial-gradient(ellipse at 31% 63%, rgba(255,255,255,.92) 0 22%, transparent 23%),
+    radial-gradient(ellipse at 51% 73%, rgba(255,255,255,.96) 0 25%, transparent 26%),
+    radial-gradient(ellipse at 71% 62%, rgba(255,255,255,.91) 0 21%, transparent 22%),
+    radial-gradient(ellipse at 88% 73%, rgba(255,255,255,.93) 0 18%, transparent 19%),
+    linear-gradient(180deg, transparent 0%, rgba(255,255,255,.40) 64%, rgba(255,255,255,.78) 100%);
+  opacity: .72;
+  pointer-events: none;
+}
+
+.window {
+  position: relative;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(23,91,205,.94), rgba(10,49,154,.94));
+  border: 3px solid rgba(255,255,255,.97);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.10),
+    0 5px 0 rgba(0,0,0,.24),
+    0 0 18px rgba(255,255,255,.18);
+  padding: 10px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.58);
+}
+
+.hidden {
+  display: none !important;
+}
+
+button {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px;
+  border: 3px solid var(--white);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, #1232c9, #06106f);
+  color: var(--white);
+  font: inherit;
+  font-weight: 800;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow:
+    0 4px 0 rgba(0,0,0,.45),
+    inset 0 0 12px rgba(255,255,255,.08);
+  cursor: pointer;
+}
+
+button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0,0,0,.45);
+}
+
+button:disabled {
+  opacity: .5;
+}
+
+.primary {
+  background:
+    linear-gradient(180deg, #2070ff, #0633c8);
+}
+
+.danger {
+  background:
+    linear-gradient(180deg, #b32636, #68121c);
+}
+
+.good {
+  background:
+    linear-gradient(180deg, #20a752, #0b5b2b);
+}
+
+.gold {
+  color: var(--yellow);
+}
+
+.cyan {
+  color: var(--cyan);
+}
+
+/* =========================================================
+  タイトル画面：青空と希望感
+========================================================= */
+
+#titleScreen {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  background:
+    radial-gradient(circle at 50% 10%, rgba(255,255,255,.94), transparent 13%),
+    radial-gradient(circle at 18% 20%, rgba(255,255,255,.48), transparent 18%),
+    radial-gradient(circle at 83% 29%, rgba(255,255,255,.40), transparent 20%),
+    linear-gradient(180deg, #98e6ff 0%, #5ac5fb 45%, #1f86da 100%);
+  overflow: hidden;
+}
+
+#titleScreen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255,255,255,.98) 0 2px, transparent 3px),
+    radial-gradient(circle at 72% 16%, rgba(255,255,255,.78) 0 1px, transparent 3px),
+    radial-gradient(circle at 40% 36%, rgba(255,255,255,.68) 0 1px, transparent 3px),
+    linear-gradient(120deg, rgba(255,255,255,.23), transparent 36%, rgba(255,255,255,.15), transparent 72%);
+  opacity: .68;
+  pointer-events: none;
+}
+
+#titleScreen::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -22px;
+  width: 590px;
+  height: 195px;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(ellipse at 13% 72%, rgba(255,255,255,.96) 0 18%, transparent 19%),
+    radial-gradient(ellipse at 31% 63%, rgba(255,255,255,.94) 0 22%, transparent 23%),
+    radial-gradient(ellipse at 52% 73%, rgba(255,255,255,.97) 0 25%, transparent 26%),
+    radial-gradient(ellipse at 73% 62%, rgba(255,255,255,.93) 0 21%, transparent 22%),
+    radial-gradient(ellipse at 89% 73%, rgba(255,255,255,.95) 0 18%, transparent 19%),
+    linear-gradient(180deg, transparent 0%, rgba(255,255,255,.42) 65%, rgba(255,255,255,.80) 100%);
+  opacity: .82;
+  pointer-events: none;
+}
+
+.titleMain {
+  text-align: center;
+  font-size: clamp(32px, 9vw, 48px);
+  line-height: 1.16;
+  color: var(--yellow);
+  letter-spacing: 3px;
+  text-shadow:
+    0 0 12px rgba(255,255,255,.55),
+    3px 3px 0 #000,
+    -1px -1px 0 #000;
+}
+
+.titleLogoMark {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 10px;
+  border: 3px solid rgba(255,255,255,.9);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 45%, #fff 0 8%, var(--yellow) 9% 18%, transparent 19%),
+    conic-gradient(from 0deg, rgba(139,233,255,.9), rgba(255,230,109,.9), rgba(177,140,255,.9), rgba(139,233,255,.9));
+  box-shadow:
+    0 0 20px rgba(255,255,255,.42),
+    inset 0 0 18px rgba(0,0,0,.25);
+  animation: titlePulse 2.4s ease-in-out infinite;
+}
+
+.titleSub {
+  text-align: center;
+  margin-top: 10px;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.tapStart {
+  text-align: center;
+  margin-top: 6px;
+  color: var(--cyan);
+  font-size: 12px;
+  letter-spacing: 2px;
+  animation: blink .9s infinite;
+}
+
+.titleButtons {
+  display: grid;
+  gap: 10px;
+}
+
+.note {
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* =========================================================
+  メインUI
+========================================================= */
+
+#topBar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+}
+
+#status {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  font-size: 12px;
+}
+
+.statLine {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.barOuter {
+  position: relative;
+  grid-column: 1 / -1;
+  height: 12px;
+  background:
+    linear-gradient(180deg, #000316, #000842);
+  border: 1px solid rgba(255,255,255,.92);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 6px rgba(0,0,0,.8),
+    0 0 8px rgba(255,255,255,.08);
+}
+
+.barInner {
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  transition: width .24s ease-out;
+  box-shadow:
+    inset 0 0 8px rgba(255,255,255,.18),
+    0 0 8px rgba(255,255,255,.15);
+}
+
+#hpBar {
+  background: linear-gradient(90deg, #35dd72, #b8ff7d);
+}
+
+#expBar {
+  background: linear-gradient(90deg, #6dd6ff, #e1fbff);
+}
+
+#enemyHpBar {
+  background: linear-gradient(90deg, #ff4d64, #ffb36d);
+}
+
+#timerBar {
+  background: linear-gradient(90deg, #ffe66d, #ffffff);
+}
+
+#enemyArea {
+  flex: 1;
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.enemyName {
+  font-size: 18px;
+  color: var(--yellow);
+}
+
+.enemyMeta {
+  font-size: 12px;
+}
+
+.enemyStage {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  display: grid;
+  place-items: center;
+}
+
+.enemyStage::before {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  width: 210px;
+  height: 46px;
+  background:
+    radial-gradient(ellipse, rgba(139,233,255,.30), rgba(0,0,0,.0) 68%);
+  filter: blur(2px);
+}
+
+#enemyImage {
+  position: relative;
+  z-index: 2;
+  max-width: 165px;
+  max-height: 145px;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 12px 0 rgba(0,0,0,.35))
+    drop-shadow(0 0 12px rgba(139,233,255,.18));
+  animation: floaty 1.8s infinite ease-in-out;
+}
+
+.monster {
+  position: relative;
+  z-index: 2;
+  width: 132px;
+  height: 116px;
+  filter:
+    drop-shadow(0 10px 0 rgba(0,0,0,.35))
+    drop-shadow(0 0 10px rgba(139,233,255,.12));
+  animation: floaty 1.8s infinite ease-in-out;
+}
+
+.monster.seed {
+  background: #63dd7a;
+  border: 4px solid #fff;
+  border-radius: 55% 55% 45% 45%;
+  clip-path: polygon(50% 0, 85% 28%, 96% 65%, 75% 100%, 25% 100%, 4% 65%, 15% 28%);
+}
+
+.monster.bat {
+  background: #4d45c8;
+  border: 4px solid #fff;
+  border-radius: 50%;
+}
+
+.monster.bat::before,
+.monster.bat::after {
+  content: "";
+  position: absolute;
+  top: 28px;
+  width: 68px;
+  height: 42px;
+  background: #282080;
+  border: 3px solid #fff;
+  z-index: -1;
+}
+
+.monster.bat::before {
+  left: -52px;
+  transform: rotate(-22deg);
+  border-radius: 80% 20% 80% 20%;
+}
+
+.monster.bat::after {
+  right: -52px;
+  transform: rotate(22deg);
+  border-radius: 20% 80% 20% 80%;
+}
+
+.monster.cloud {
+  background: #cbcfff;
+  border: 4px solid #fff;
+  border-radius: 48% 48% 36% 36%;
+}
+
+.monster.cloud::before,
+.monster.cloud::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  width: 48px;
+  height: 36px;
+  background: #cbcfff;
+  border: 3px solid #fff;
+  border-top: 0;
+  border-radius: 0 0 50% 50%;
+}
+
+.monster.cloud::before { left: 10px; }
+.monster.cloud::after { right: 10px; }
+
+.monster.owl {
+  background: #d0954f;
+  border: 4px solid #fff;
+  border-radius: 48% 48% 42% 42%;
+}
+
+.monster.owl::before,
+.monster.owl::after {
+  content: "";
+  position: absolute;
+  top: -12px;
+  width: 34px;
+  height: 34px;
+  background: #d0954f;
+  border: 3px solid #fff;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.monster.owl::before { left: 12px; }
+.monster.owl::after { right: 12px; }
+
+.monster.wall {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.25) 1px, transparent 1px),
+    linear-gradient(#777, #555);
+  background-size: 32px 32px;
+  border: 4px solid #fff;
+  border-radius: 12px;
+}
+
+.monster.boss {
+  width: 150px;
+  height: 130px;
+  background: #8b25e8;
+  border: 4px solid #fff;
+  border-radius: 34% 34% 45% 45%;
+  box-shadow: 0 0 24px rgba(177,140,255,.35);
+}
+
+.monster.boss::before,
+.monster.boss::after {
+  content: "";
+  position: absolute;
+  top: -22px;
+  width: 42px;
+  height: 48px;
+  background: #ff4b4b;
+  border: 3px solid #fff;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.monster.boss::before {
+  left: 18px;
+  transform: rotate(-22deg);
+}
+
+.monster.boss::after {
+  right: 18px;
+  transform: rotate(22deg);
+}
+
+.eye {
+  position: absolute;
+  top: 42px;
+  width: 14px;
+  height: 18px;
+  background: #000;
+  border-radius: 50%;
+}
+
+.eye.left { left: 37px; }
+.eye.right { right: 37px; }
+
+.mouth {
+  position: absolute;
+  left: 50%;
+  top: 74px;
+  width: 38px;
+  height: 16px;
+  transform: translateX(-50%);
+  border-bottom: 4px solid #000;
+  border-radius: 0 0 50% 50%;
+}
+
+#messageBox {
+  min-height: 86px;
+  line-height: 1.55;
+  font-size: 14px;
+  position: relative;
+  white-space: pre-wrap;
+}
+
+#nextMark {
+  position: absolute;
+  right: 12px;
+  bottom: 5px;
+  color: var(--yellow);
+  animation: blink .9s infinite;
+}
+
+#quizBox {
+  display: grid;
+  gap: 8px;
+}
+
+#category {
+  color: var(--cyan);
+  font-size: 12px;
+}
+
+#question {
+  line-height: 1.55;
+  font-size: 15px;
+}
+
+#timerOuter {
+  height: 12px;
+  background:
+    linear-gradient(180deg, #000316, #000842);
+  border: 1px solid #fff;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+#choices {
+  display: grid;
+  gap: 8px;
+}
+
+.choiceBtn {
+  text-align: left;
+  min-height: 54px;
+  line-height: 1.35;
+}
+
+#resultOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background:
+    radial-gradient(circle at center, rgba(15,34,150,.85), rgba(0,0,0,.86));
+}
+
+.resultCard {
+  width: 100%;
+  text-align: center;
+}
+
+.resultTitle {
+  font-size: 28px;
+  color: var(--yellow);
+  margin-bottom: 8px;
+}
+
+.resultBody {
+  line-height: 1.7;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+#historyList {
+  max-height: 260px;
+  overflow-y: auto;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =========================================================
+  画面演出
+========================================================= */
+
+#flashLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.flashText {
+  font-size: clamp(34px, 11vw, 54px);
+  font-weight: 900;
+  color: var(--yellow);
+  letter-spacing: 4px;
+  text-shadow:
+    0 0 14px rgba(255,255,255,.95),
+    3px 3px 0 #000;
+}
+
+#flashLayer.showCorrect {
+  animation: flashPop .7s ease-out both;
+}
+
+#flashLayer.showWrong {
+  animation: wrongFlash .55s ease-out both;
+}
+
+#flashLayer.showLevel {
+  animation: levelFlash .95s ease-out both;
+}
+
+#flashLayer.showDefeat {
+  animation: defeatFlash .75s ease-out both;
+}
+
+.screenShake {
+  animation: screenShake .32s ease-out;
+}
+
+.damage {
+  animation: damage .34s;
+}
+
+.appear {
+  animation: appear .32s both, floaty 1.8s infinite ease-in-out .32s;
+}
+
+.defeatAnim {
+  animation: enemyDefeat .55s ease-in both;
+}
+
+/* =========================================================
+  アニメーション
+========================================================= */
+
+@keyframes titlePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 18px rgba(255,255,255,.4);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 30px rgba(255,230,109,.65);
+  }
+}
+
+@keyframes floaty {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes blink {
+  0%,49% { opacity: 1; }
+  50%,100% { opacity: 0; }
+}
+
+@keyframes damage {
+  0%,100% { transform: translateX(0); filter: brightness(1); }
+  20% { transform: translateX(-8px); filter: brightness(2); }
+  40% { transform: translateX(8px); filter: brightness(.6); }
+  60% { transform: translateX(-5px); filter: brightness(1.8); }
+  80% { transform: translateX(5px); filter: brightness(.8); }
+}
+
+@keyframes appear {
+  0% { transform: scale(.75) translateY(-12px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes flashPop {
+  0% { opacity: 0; transform: scale(.75); background: rgba(255,255,255,0); }
+  20% { opacity: 1; transform: scale(1.12); background: rgba(255,255,255,.22); }
+  55% { opacity: 1; transform: scale(1); background: rgba(255,230,109,.08); }
+  100% { opacity: 0; transform: scale(1.05); background: rgba(255,255,255,0); }
+}
+
+@keyframes wrongFlash {
+  0% { opacity: 0; background: rgba(255,0,0,0); }
+  25% { opacity: 1; background: rgba(255,0,0,.18); }
+  100% { opacity: 0; background: rgba(0,0,0,0); }
+}
+
+@keyframes levelFlash {
+  0% { opacity: 0; transform: scale(.8); background: rgba(255,255,255,0); }
+  20% { opacity: 1; transform: scale(1.12); background: rgba(139,233,255,.20); }
+  55% { opacity: 1; transform: scale(1); background: rgba(255,230,109,.18); }
+  100% { opacity: 0; transform: scale(1.08); background: rgba(255,255,255,0); }
+}
+
+@keyframes defeatFlash {
+  0% { opacity: 0; background: rgba(255,255,255,0); }
+  20% { opacity: 1; background: rgba(255,255,255,.30); }
+  100% { opacity: 0; background: rgba(255,255,255,0); }
+}
+
+@keyframes enemyDefeat {
+  0% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
+  45% { opacity: 1; transform: scale(1.18) translateY(-8px); filter: brightness(2.5); }
+  100% { opacity: 0; transform: scale(.25) translateY(20px); filter: brightness(3); }
+}
+
+@keyframes screenShake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(7px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+@media (max-height: 690px) {
+  #enemyArea {
+    min-height: 165px;
+  }
+
+  .enemyStage {
+    height: 125px;
+  }
+
+  .monster {
+    transform: scale(.82);
+  }
+
+  #enemyImage {
+    max-height: 120px;
+  }
+
+  #messageBox {
+    min-height: 72px;
+    font-size: 13px;
+  }
+
+  button {
+    min-height: 48px;
+    font-size: 13px;
+  }
+}
+</style>
+</head>
+
+<body>
+<div id="app">
+
+  <div id="flashLayer">
+    <div id="flashText" class="flashText"></div>
+  </div>
+
+  <!-- タイトル画面 -->
+  <section id="titleScreen">
+    <div class="window">
+      <div class="titleLogoMark"></div>
+      <div class="titleMain">希望の<br>クイズバトル</div>
+      <div class="titleSub">
+        学びの光で、迷いを照らそう。<br>
+        教学を楽しく学べるレトロ風バトル！
+      </div>
+      <div class="tapStart">TAP TO LEARN</div>
+    </div>
+
+    <div class="window titleButtons">
+      <button id="startBtn" class="primary">はじめる</button>
+      <button id="continueBtn">つづきから</button>
+      <button id="historyBtn">スコア履歴</button>
+      <button id="deleteBtn" class="danger">セーブ削除</button>
+    </div>
+
+    <div class="window note">
+      操作はかんたん。4択クイズに答えるだけ。<br>
+      正解で攻撃、不正解で敵の攻撃。<br>
+      10体ごとにフロアボスが出現します。
+    </div>
+  </section>
+
+  <!-- 上部情報 -->
+  <section id="topBar" class="window">
+    <div>
+      <span class="gold">希望の勇者</span>
+      <span id="floorText"> 第1層</span>
+    </div>
+    <div id="scoreText">0点</div>
+  </section>
+
+  <!-- ステータス -->
+  <section id="status" class="window">
+    <div class="statLine"><span>Lv</span><span id="levelText">1</span></div>
+    <div class="statLine"><span>EXP</span><span id="expText">0/20</span></div>
+
+    <div class="statLine"><span>HP</span><span id="hpText">30/30</span></div>
+    <div class="statLine"><span>撃破</span><span id="defeatedText">0</span></div>
+    <div class="barOuter"><div id="hpBar" class="barInner"></div></div>
+
+    <div class="statLine"><span>EXP</span><span id="expMiniText">0%</span></div>
+    <div class="statLine"><span>正答率</span><span id="accuracyText">0%</span></div>
+    <div class="barOuter"><div id="expBar" class="barInner"></div></div>
+
+    <div class="statLine"><span>コンボ</span><span id="comboText">0</span></div>
+    <div class="statLine"><span>最高</span><span id="bestComboText">0</span></div>
+  </section>
+
+  <!-- 敵表示 -->
+  <section id="enemyArea" class="window">
+    <div class="enemyName" id="enemyName">---</div>
+
+    <div class="enemyStage">
+      <img id="enemyImage" class="hidden" src="" alt="敵キャラ">
+      <div id="monster" class="monster seed">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+        <div class="mouth"></div>
+      </div>
+    </div>
+
+    <div class="enemyMeta" id="enemyHpText">HP --/--</div>
+    <div class="barOuter" style="width:100%; max-width:270px;">
+      <div id="enemyHpBar" class="barInner"></div>
+    </div>
+  </section>
+
+  <!-- メッセージ -->
+  <section id="messageBox" class="window">
+    <div id="message">準備中...</div>
+    <div id="nextMark" class="hidden">▼</div>
+  </section>
+
+  <!-- クイズ -->
+  <section id="quizBox" class="window hidden">
+    <div id="category">カテゴリ</div>
+    <div id="question">問題文</div>
+    <div id="timerOuter"><div id="timerBar" class="barInner"></div></div>
+    <div id="choices"></div>
+  </section>
+
+  <!-- 結果・履歴オーバーレイ -->
+  <section id="resultOverlay" class="hidden">
+    <div class="window resultCard">
+      <div id="resultTitle" class="resultTitle">RESULT</div>
+      <div id="resultBody" class="resultBody"></div>
+      <div id="historyList" class="hidden"></div>
+      <button id="closeOverlayBtn" class="primary">タイトルへ</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+  便利関数
+========================================================= */
+
+const $ = (id) => document.getElementById(id);
+
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function nowText() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${y}-${m}-${day} ${h}:${min}`;
+}
+
+/* =========================================================
+  DOM
+========================================================= */
+
+const app = $("app");
+
+const titleScreen = $("titleScreen");
+const startBtn = $("startBtn");
+const continueBtn = $("continueBtn");
+const historyBtn = $("historyBtn");
+const deleteBtn = $("deleteBtn");
+
+const floorText = $("floorText");
+const scoreText = $("scoreText");
+const levelText = $("levelText");
+const expText = $("expText");
+const expMiniText = $("expMiniText");
+const hpText = $("hpText");
+const defeatedText = $("defeatedText");
+const hpBar = $("hpBar");
+const expBar = $("expBar");
+const comboText = $("comboText");
+const bestComboText = $("bestComboText");
+const accuracyText = $("accuracyText");
+
+const enemyName = $("enemyName");
+const enemyImage = $("enemyImage");
+const monster = $("monster");
+const enemyHpText = $("enemyHpText");
+const enemyHpBar = $("enemyHpBar");
+
+const messageBox = $("messageBox");
+const message = $("message");
+const nextMark = $("nextMark");
+
+const quizBox = $("quizBox");
+const categoryEl = $("category");
+const questionEl = $("question");
+const timerBar = $("timerBar");
+const choicesEl = $("choices");
+
+const resultOverlay = $("resultOverlay");
+const resultTitle = $("resultTitle");
+const resultBody = $("resultBody");
+const historyList = $("historyList");
+const closeOverlayBtn = $("closeOverlayBtn");
+
+const flashLayer = $("flashLayer");
+const flashText = $("flashText");
+
+/* =========================================================
+  保存キー
+========================================================= */
+
+const SAVE_KEY = "kibou_quiz_battle_save_v2";
+const HISTORY_KEY = "kibou_quiz_battle_history_v2";
+const HIGH_SCORE_KEY = "kibou_quiz_battle_high_score_v2";
+
+/* =========================================================
+  プレイヤーデータ
+========================================================= */
+
+let player = {};
+let currentEnemy = null;
+let currentQuiz = null;
+let quizTimer = null;
+let timeLeft = 0;
+let isAnswering = false;
+let questionDeck = [];
+let challengeDeck = [];
+
+/* =========================================================
+  敵データ
+  image に画像パスを入れると画像表示になります。
+  例：image: "assets/images/mayoi_seed.png"
+
+  image が空文字の場合はCSSモンスターを表示します。
+========================================================= */
+
+const enemyTemplates = [
+  { name: "まよいのタネ", type: "seed", image: "", baseHp: 22, baseAtk: 4, exp: 8, score: 100 },
+  { name: "ねむけコウモリ", type: "bat", image: "", baseHp: 26, baseAtk: 5, exp: 10, score: 120 },
+  { name: "モヤモヤけむり", type: "cloud", image: "", baseHp: 30, baseAtk: 6, exp: 12, score: 140 },
+  { name: "知ったかフクロウ", type: "owl", image: "", baseHp: 36, baseAtk: 7, exp: 15, score: 170 },
+  { name: "無関心のカベ", type: "wall", image: "", baseHp: 44, baseAtk: 8, exp: 18, score: 200 }
+];
+
+const bossNames = [
+  "第1層の番人",
+  "迷いの門番",
+  "疑いの守護者",
+  "あせりの巨影",
+  "無関心の王",
+  "迷宮の主"
+];
+
+const bossImages = [
+  "",
+  "",
+  "",
+  "",
+  "",
+  ""
+];
+
+/* =========================================================
+  通常クイズデータ quizBank
+  問題を追加したい場合は、この配列に同じ形式で追加してください。
+
+  answer は choices の番号です。
+  0 = 1番目、1 = 2番目、2 = 3番目、3 = 4番目です。
+========================================================= */
+
+const quizBank = [
+  {
+    category: "信行学",
+    question: "日蓮仏法の修行の基本とされる三つはどれですか？",
+    choices: ["信・行・学", "衣・食・住", "朝・昼・夜", "金・銀・銅"],
+    answer: 0,
+    explanation: "信じ、実践し、学ぶことが仏道修行の基本です。"
+  },
+  {
+    category: "日蓮大聖人の御生涯",
+    question: "日蓮大聖人が南無妙法蓮華経を唱え、末法の人々を救う教えを宣言された出来事は？",
+    choices: ["立宗宣言", "学生部結成", "原水爆禁止宣言", "魂の独立"],
+    answer: 0,
+    explanation: "1253年4月28日、大聖人は立宗宣言をされました。"
+  },
+  {
+    category: "南無妙法蓮華経",
+    question: "「南無」には、どのような意味がありますか？",
+    choices: ["帰命", "地名", "食べ物", "数字"],
+    answer: 0,
+    explanation: "南無とは帰命、つまり全身全霊で教えを実践する姿勢を表します。"
+  },
+  {
+    category: "南無妙法蓮華経",
+    question: "「蓮華」は、どのようなたとえとして説明されますか？",
+    choices: ["泥の中でも清らかな花を咲かせる", "空を飛ぶ", "速く走る", "大きな音を出す"],
+    answer: 0,
+    explanation: "蓮華は、苦悩の現実の中でも清らかな生命を開く姿を表します。"
+  },
+  {
+    category: "一生成仏",
+    question: "一生成仏とは、どのような意味ですか？",
+    choices: ["一生のうちに成仏の境涯を得ること", "一生勉強しないこと", "一人だけが幸せになること", "一日だけ努力すること"],
+    answer: 0,
+    explanation: "一生成仏は、今世で自身の仏界を開いていくことを示します。"
+  },
+  {
+    category: "立正安国",
+    question: "立正安国の意味に近いものはどれですか？",
+    choices: ["正しい法を立て、社会の平和を目指す", "国を大きくする", "静かに眠る", "旅行に出る"],
+    answer: 0,
+    explanation: "立正安国は、人々の幸福と社会の安穏を目指す思想です。"
+  },
+  {
+    category: "広宣流布",
+    question: "広宣流布とは、何を広めて人々の幸福を目指すことですか？",
+    choices: ["仏の覚りである正法", "地図", "料理の作り方", "商品"],
+    answer: 0,
+    explanation: "広宣流布は、正法を人々に広め、万人の幸福を目指すことです。"
+  },
+  {
+    category: "法華経",
+    question: "法華経で大切に説かれている考え方として近いものは？",
+    choices: ["万人成仏", "一部の人だけの幸福", "争いのすすめ", "学びの否定"],
+    answer: 0,
+    explanation: "法華経は、すべての人に仏の生命があるという万人成仏を説きます。"
+  },
+  {
+    category: "御本尊",
+    question: "御本尊とは、信仰の何にあたるものですか？",
+    choices: ["根本対象", "飾りだけのもの", "食べ物", "建物の名前"],
+    answer: 0,
+    explanation: "本尊とは、根本として尊敬する信仰の対象をいいます。"
+  },
+  {
+    category: "三証",
+    question: "仏法を判断する基準である三証に含まれるものは？",
+    choices: ["文証・理証・現証", "金・銀・銅", "朝・昼・夜", "上・中・下"],
+    answer: 0,
+    explanation: "三証とは、文証・理証・現証の三つです。"
+  },
+  {
+    category: "三証",
+    question: "三証のうち、現実生活の上で結果が現れることを示すのは？",
+    choices: ["現証", "文証", "理証", "暗証"],
+    answer: 0,
+    explanation: "現証は、信仰の実践が現実生活に結果として現れることです。"
+  },
+  {
+    category: "信心即生活",
+    question: "信心即生活の説明として近いものは？",
+    choices: ["日々の生活そのものが仏道修行の場", "生活と信心は無関係", "勉強だけが大切", "家の中だけが大切"],
+    answer: 0,
+    explanation: "信心即生活は、現実の生活を大切にしながら信心を表す考え方です。"
+  },
+  {
+    category: "異体同心",
+    question: "異体同心の意味として近いものは？",
+    choices: ["立場は違っても志を同じくする", "全員が同じ服を着る", "一人だけで進む", "違いを否定する"],
+    answer: 0,
+    explanation: "異体同心は、個性を生かしながら目的を同じくして進むことです。"
+  },
+  {
+    category: "十界",
+    question: "十界とは何を10種類に分類したものですか？",
+    choices: ["生命の状態・境涯", "日本の地域", "食べ物", "曜日"],
+    answer: 0,
+    explanation: "十界は、生命の状態や境涯を10種類に分類した考え方です。"
+  },
+  {
+    category: "十界",
+    question: "十界のうち、苦悩に満ちた境涯として説明されるものは？",
+    choices: ["地獄界", "仏界", "菩薩界", "天界"],
+    answer: 0,
+    explanation: "地獄界は、苦悩に満ちた生命状態として説明されます。"
+  },
+  {
+    category: "十界",
+    question: "菩薩界の説明として近いものは？",
+    choices: ["自他の幸福を願い、人々を救おうとする境涯", "怒りだけの境涯", "何もしない境涯", "眠っている状態"],
+    answer: 0,
+    explanation: "菩薩界は、自分だけでなく他者の幸福も願って行動する境涯です。"
+  },
+  {
+    category: "一念三千",
+    question: "一念三千の「一念」とは何を指しますか？",
+    choices: ["一人一人の瞬間の生命", "一つの建物", "一枚の紙", "一回の食事"],
+    answer: 0,
+    explanation: "一念とは、私たち一人一人の瞬間の生命を指します。"
+  },
+  {
+    category: "宿命転換",
+    question: "宿命転換とは、苦難をどうする考え方ですか？",
+    choices: ["信心の実践で乗り越え、人生を変えていく", "何もせずあきらめる", "人のせいにする", "忘れるだけにする"],
+    answer: 0,
+    explanation: "宿命転換は、信心の実践によって人生を変革していく法理です。"
+  },
+  {
+    category: "変毒為薬",
+    question: "変毒為薬の意味に近いものは？",
+    choices: ["苦しみを価値あるものへ変える", "薬を捨てる", "毒を集める", "何も変えない"],
+    answer: 0,
+    explanation: "変毒為薬は、苦難を成長や価値へと転じる考え方です。"
+  },
+  {
+    category: "地涌の菩薩",
+    question: "地涌の菩薩は、法華経で何を担う存在として説かれますか？",
+    choices: ["末法に法華経を弘める使命", "城を建てる仕事", "音楽を演奏する役割", "旅だけをする役割"],
+    answer: 0,
+    explanation: "地涌の菩薩は、末法に妙法を弘める使命を担う存在です。"
+  },
+  {
+    category: "御書",
+    question: "御書とは、日蓮大聖人が弟子たちに送られた何を含みますか？",
+    choices: ["御手紙や論文", "買い物リスト", "地図だけ", "歌詞だけ"],
+    answer: 0,
+    explanation: "御書は、大聖人の御手紙や論文などを尊重して拝読するものです。"
+  },
+  {
+    category: "依正不二",
+    question: "依正不二の説明として近いものは？",
+    choices: ["自分自身と環境は深く関係している", "環境は一切関係ない", "体と心は完全に別", "過去は存在しない"],
+    answer: 0,
+    explanation: "依正不二は、衆生と環境が不可分の関係にあることを示します。"
+  },
+  {
+    category: "色心不二",
+    question: "色心不二の説明として近いものは？",
+    choices: ["体と心は切り離せない", "体だけが大事", "心だけで十分", "色の名前を覚えること"],
+    answer: 0,
+    explanation: "色心不二は、肉体面と心の働きが一体であることを示します。"
+  },
+  {
+    category: "創価学会の歴史",
+    question: "創価学会の創立記念日はいつですか？",
+    choices: ["11月18日", "5月3日", "3月16日", "8月31日"],
+    answer: 0,
+    explanation: "1930年11月18日が創価学会創立記念日です。"
+  },
+  {
+    category: "創価学会の歴史",
+    question: "学生部が結成された日はいつですか？",
+    choices: ["1957年6月30日", "1930年11月18日", "1960年5月3日", "1975年1月26日"],
+    answer: 0,
+    explanation: "学生部は1957年6月30日に結成されました。"
+  },
+  {
+    category: "創価学会の歴史",
+    question: "戸田城聖先生が発表された平和思想に関わる宣言は？",
+    choices: ["原水爆禁止宣言", "立宗宣言", "日中国交正常化提言", "御書新版発刊"],
+    answer: 0,
+    explanation: "戸田先生は1957年9月8日に原水爆禁止宣言を発表されました。"
+  },
+  {
+    category: "創価学会の歴史",
+    question: "3月16日は、後に何の日と呼ばれるようになりましたか？",
+    choices: ["広宣流布記念の日", "創立記念日", "学生部の日", "SGIの日"],
+    answer: 0,
+    explanation: "1958年3月16日は、後に広宣流布記念の日となりました。"
+  },
+  {
+    category: "池田先生の歴史",
+    question: "池田大作先生が第3代会長に就任された日は？",
+    choices: ["1960年5月3日", "1930年11月18日", "1957年6月30日", "1975年1月26日"],
+    answer: 0,
+    explanation: "池田先生は1960年5月3日に第3代会長に就任されました。"
+  },
+  {
+    category: "SGI",
+    question: "SGIが発足した年は？",
+    choices: ["1975年", "1930年", "1951年", "1991年"],
+    answer: 0,
+    explanation: "SGIは1975年1月26日に発足しました。"
+  },
+  {
+    category: "学生部の歴史",
+    question: "8月31日は学生部にとって何に関わる日ですか？",
+    choices: ["学生部の日", "創立記念日", "広宣流布記念の日", "原水爆禁止宣言の日"],
+    answer: 0,
+    explanation: "1962年8月31日に学生部代表への御義口伝講義が始まり、学生部の日となりました。"
+  },
+  {
+    category: "教学の姿勢",
+    question: "教学を学ぶ姿勢としてよいものは？",
+    choices: ["用語の意味を確認し、生活に生かす", "ただ暗記して終わる", "難しいから避ける", "他人を責めるために使う"],
+    answer: 0,
+    explanation: "教学は、学びを生活と行動に生かしてこそ力になります。"
+  },
+  {
+    category: "人の振る舞い",
+    question: "信心の証しとして大切な振る舞いは？",
+    choices: ["良識ある振る舞いで周囲から信頼されること", "強い言葉で相手を責めること", "自分だけよければよいこと", "約束を守らないこと"],
+    answer: 0,
+    explanation: "人の振る舞いを大切にすることが、信心の証しにもなります。"
+  },
+  {
+    category: "善知識",
+    question: "善知識とは、どのような存在ですか？",
+    choices: ["信心を励まし支えてくれる存在", "悪い方向へ誘う存在", "何も関係ない存在", "道具の名前"],
+    answer: 0,
+    explanation: "善知識は、信仰や成長を支えてくれる大切な存在です。"
+  },
+  {
+    category: "法華経",
+    question: "法華経は何巻何品で構成されていますか？",
+    choices: ["8巻28品", "1巻1品", "3巻16品", "10巻10品"],
+    answer: 0,
+    explanation: "法華経は8巻28品で構成されています。"
+  },
+  {
+    category: "三大秘法",
+    question: "三大秘法に含まれるものはどれですか？",
+    choices: ["本門の本尊・本門の戒壇・本門の題目", "衣・食・住", "文・理・現", "地・水・火"],
+    answer: 0,
+    explanation: "三大秘法とは、本門の本尊・戒壇・題目です。"
+  },
+  {
+    category: "難即悟達",
+    question: "難即悟達の意味として近いものは？",
+    choices: ["困難を成長と悟りの契機にする", "困難を必ず避ける", "何も学ばない", "相手を責める"],
+    answer: 0,
+    explanation: "難即悟達は、困難を通して生命を鍛え、境涯を開く考え方です。"
+  }
+];
+
+/* =========================================================
+  挑戦問題データ challengeQuizBank
+  10問ごとに出題されます。
+========================================================= */
+
+const challengeQuizBank = [
+  {
+    category: "挑戦問題・信行学",
+    question: "「信・行・学」の関係として最も近いものはどれですか？",
+    choices: ["信じ、実践し、学ぶことが互いに支え合う", "学ぶだけで実践は必要ない", "信じることと生活は関係ない", "どれか一つだけあれば十分"],
+    answer: 0,
+    explanation: "信・行・学は、どれか一つだけではなく、互いに支え合う修行の基本です。"
+  },
+  {
+    category: "挑戦問題・十界",
+    question: "十界互具の考え方として近いものはどれですか？",
+    choices: ["どの生命にも十界が具わる", "人は一つの境涯だけで固定される", "仏界は特別な人にしかない", "環境は生命に関係しない"],
+    answer: 0,
+    explanation: "十界互具は、どの生命にも十界が具わることを示します。"
+  },
+  {
+    category: "挑戦問題・立正安国",
+    question: "立正安国の考え方として最も近いものは？",
+    choices: ["人々の生命尊厳の理念が社会の平和につながる", "個人の幸福と社会は無関係", "国だけが大事", "争いをすすめる思想"],
+    answer: 0,
+    explanation: "立正安国は、個人の幸福と社会の安穏を結びつけて考える思想です。"
+  },
+  {
+    category: "挑戦問題・宿命転換",
+    question: "変毒為薬と宿命転換に共通する考え方は？",
+    choices: ["苦難を価値創造の力に変えていく", "苦難から目をそらす", "努力をやめる", "他人だけを変えようとする"],
+    answer: 0,
+    explanation: "苦難を意味ある成長へ変えていくところに共通点があります。"
+  },
+  {
+    category: "挑戦問題・創価学会の歴史",
+    question: "創価学会が御書を大切にしてきた姿勢として近いものは？",
+    choices: ["御書根本の実践の教学", "形式だけの学び", "生活と無関係な知識", "学びを避ける姿勢"],
+    answer: 0,
+    explanation: "創価学会は御書根本の精神で、実践の教学を大切にしてきました。"
+  }
+];
+
+/* =========================================================
+  初期化
+========================================================= */
+
+function createNewPlayer() {
+  return {
+    level: 1,
+    exp: 0,
+    nextExp: 20,
+
+    hp: 30,
+    maxHp: 30,
+
+    attack: 5,
+    defense: 2,
+    quizPower: 10,
+
+    score: 0,
+
+    correctCount: 0,
+    wrongCount: 0,
+    totalAnswered: 0,
+    combo: 0,
+    bestCombo: 0,
+
+    defeatedCount: 0,
+    floor: 1,
+
+    seenQuestions: [],
+    seenChallenges: []
+  };
+}
+
+function resetDecks() {
+  questionDeck = shuffle(quizBank.map((_, i) => i));
+  challengeDeck = shuffle(challengeQuizBank.map((_, i) => i));
+}
+
+/* =========================================================
+  WebAudio API
+========================================================= */
+
+let audioCtx = null;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function tone(freq, duration = .08, type = "square", volume = .06) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = type;
+  osc.frequency.value = freq;
+
+  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + duration);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+function sfx(type) {
+  if (!audioCtx) return;
+
+  if (type === "select") {
+    tone(740, .05);
+    setTimeout(() => tone(980, .05), 45);
+  }
+
+  if (type === "correct") {
+    tone(660, .08);
+    setTimeout(() => tone(880, .08), 80);
+    setTimeout(() => tone(1320, .12), 160);
+  }
+
+  if (type === "wrong") {
+    tone(220, .12, "square", .08);
+    setTimeout(() => tone(160, .14, "square", .08), 110);
+  }
+
+  if (type === "damage") {
+    tone(140, .12, "sawtooth", .09);
+    setTimeout(() => tone(90, .12, "sawtooth", .08), 90);
+  }
+
+  if (type === "win") {
+    [523, 659, 784, 1046].forEach((n, i) => {
+      setTimeout(() => tone(n, .1), i * 100);
+    });
+  }
+
+  if (type === "level") {
+    [523, 587, 659, 784, 1046].forEach((n, i) => {
+      setTimeout(() => tone(n, .08), i * 80);
+    });
+  }
+
+  if (type === "gameover") {
+    [330, 294, 262, 196].forEach((n, i) => {
+      setTimeout(() => tone(n, .18, "triangle", .08), i * 160);
+    });
+  }
+}
+
+/* =========================================================
+  演出処理
+========================================================= */
+
+function playFlash(text, className) {
+  flashText.textContent = text;
+  flashLayer.className = "";
+  void flashLayer.offsetWidth;
+  flashLayer.classList.add(className);
+
+  setTimeout(() => {
+    flashLayer.className = "";
+  }, 900);
+}
+
+function screenShake() {
+  app.classList.remove("screenShake");
+  void app.offsetWidth;
+  app.classList.add("screenShake");
+}
+
+function animateEnemyDamage() {
+  const target = enemyImage.classList.contains("hidden") ? monster : enemyImage;
+  target.classList.remove("damage");
+  void target.offsetWidth;
+  target.classList.add("damage");
+}
+
+async function animateEnemyDefeat() {
+  const target = enemyImage.classList.contains("hidden") ? monster : enemyImage;
+  target.classList.remove("defeatAnim");
+  void target.offsetWidth;
+  target.classList.add("defeatAnim");
+  playFlash("撃破！", "showDefeat");
+  await wait(560);
+}
+
+/* =========================================================
+  メッセージ表示処理
+========================================================= */
+
+let messageResolve = null;
+let fullMessageText = "";
+let typing = false;
+let skipTyping = false;
+
+function showMessage(text) {
+  return new Promise(async (resolve) => {
+    messageResolve = resolve;
+    fullMessageText = text;
+    typing = true;
+    skipTyping = false;
+    message.textContent = "";
+    nextMark.classList.add("hidden");
+
+    for (let i = 0; i < text.length; i++) {
+      if (skipTyping) break;
+      message.textContent += text[i];
+
+      if (text[i] !== "\n" && i % 2 === 0) {
+        tone(1050, .012, "square", .012);
+      }
+
+      await wait(24);
+    }
+
+    message.textContent = text;
+    typing = false;
+    nextMark.classList.remove("hidden");
+  });
+}
+
+messageBox.addEventListener("click", () => {
+  if (!messageResolve) return;
+
+  if (typing) {
+    skipTyping = true;
+    message.textContent = fullMessageText;
+    typing = false;
+    nextMark.classList.remove("hidden");
+    return;
+  }
+
+  const resolve = messageResolve;
+  messageResolve = null;
+  nextMark.classList.add("hidden");
+  resolve();
+});
+
+/* =========================================================
+  UI更新
+========================================================= */
+
+function updateUI() {
+  floorText.textContent = ` 第${player.floor}層`;
+  scoreText.textContent = `${player.score}点`;
+
+  levelText.textContent = player.level;
+  expText.textContent = `${player.exp}/${player.nextExp}`;
+  expMiniText.textContent = `${Math.min(100, Math.round(player.exp / player.nextExp * 100))}%`;
+  hpText.textContent = `${player.hp}/${player.maxHp}`;
+  defeatedText.textContent = player.defeatedCount;
+  comboText.textContent = player.combo;
+  bestComboText.textContent = player.bestCombo;
+
+  const accuracy = player.totalAnswered
+    ? Math.round(player.correctCount / player.totalAnswered * 100)
+    : 0;
+  accuracyText.textContent = `${accuracy}%`;
+
+  hpBar.style.width = `${Math.max(0, player.hp / player.maxHp * 100)}%`;
+  expBar.style.width = `${Math.max(0, Math.min(100, player.exp / player.nextExp * 100))}%`;
+
+  if (currentEnemy) {
+    enemyName.textContent = currentEnemy.name;
+    enemyHpText.textContent = `HP ${Math.max(0, currentEnemy.hp)}/${currentEnemy.maxHp}`;
+    enemyHpBar.style.width = `${Math.max(0, currentEnemy.hp / currentEnemy.maxHp * 100)}%`;
+  }
+
+  continueBtn.disabled = !localStorage.getItem(SAVE_KEY);
+}
+
+function setQuizEnabled(enabled) {
+  const buttons = choicesEl.querySelectorAll("button");
+  buttons.forEach(btn => btn.disabled = !enabled);
+}
+
+/* =========================================================
+  敵画像・CSSフォールバック表示
+========================================================= */
+
+function renderEnemyVisual(enemy) {
+  enemyImage.classList.add("hidden");
+  monster.classList.add("hidden");
+
+  if (enemy.image) {
+    enemyImage.onload = () => {
+      enemyImage.classList.remove("hidden");
+      monster.classList.add("hidden");
+    };
+
+    enemyImage.onerror = () => {
+      enemyImage.classList.add("hidden");
+      renderCssMonster(enemy.type);
+    };
+
+    enemyImage.src = enemy.image;
+    enemyImage.classList.add("appear");
+  } else {
+    renderCssMonster(enemy.type);
+  }
+}
+
+function renderCssMonster(type) {
+  enemyImage.classList.add("hidden");
+  monster.className = `monster ${type} appear`;
+  monster.innerHTML = `
+    <div class="eye left"></div>
+    <div class="eye right"></div>
+    <div class="mouth"></div>
+  `;
+  monster.classList.remove("hidden");
+}
+
+/* =========================================================
+  セーブ処理
+========================================================= */
+
+function saveGame() {
+  localStorage.setItem(SAVE_KEY, JSON.stringify(player));
+}
+
+function loadGame() {
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (!raw) return false;
+
+  try {
+    player = JSON.parse(raw);
+    resetDecks();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function deleteSave() {
+  localStorage.removeItem(SAVE_KEY);
+}
+
+function getHighScore() {
+  return Number(localStorage.getItem(HIGH_SCORE_KEY) || "0");
+}
+
+function setHighScore(score) {
+  localStorage.setItem(HIGH_SCORE_KEY, String(score));
+}
+
+function getHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory() {
+  const accuracy = player.totalAnswered
+    ? Math.round(player.correctCount / player.totalAnswered * 100)
+    : 0;
+
+  const record = {
+    date: nowText(),
+    score: player.score,
+    level: player.level,
+    defeated: player.defeatedCount,
+    correct: player.correctCount,
+    total: player.totalAnswered,
+    accuracy,
+    bestCombo: player.bestCombo
+  };
+
+  const history = [record, ...getHistory()].slice(0, 5);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+
+  if (player.score > getHighScore()) {
+    setHighScore(player.score);
+    return true;
+  }
+
+  return false;
+}
+
+/* =========================================================
+  敵生成・ボス生成処理
+========================================================= */
+
+function createEnemy() {
+  const nextCount = player.defeatedCount + 1;
+  const isBoss = nextCount % 10 === 0;
+
+  if (isBoss) {
+    const bossIndex = Math.min(player.floor - 1, bossNames.length - 1);
+    const baseHp = 70 + player.floor * 20 + player.defeatedCount * 3;
+    const baseAtk = 8 + player.floor * 3;
+
+    return {
+      name: bossNames[bossIndex],
+      type: "boss",
+      image: bossImages[bossIndex] || "",
+      hp: baseHp,
+      maxHp: baseHp,
+      attack: baseAtk,
+      exp: 35 + player.floor * 8,
+      score: 700 + player.floor * 120,
+      boss: true
+    };
+  }
+
+  const template = enemyTemplates[rand(0, enemyTemplates.length - 1)];
+  const hp = template.baseHp + player.floor * 5 + player.defeatedCount;
+  const atk = template.baseAtk + player.floor * 2 + Math.floor(player.defeatedCount / 10);
+
+  return {
+    name: template.name,
+    type: template.type,
+    image: template.image || "",
+    hp,
+    maxHp: hp,
+    attack: atk,
+    exp: template.exp + player.floor * 2,
+    score: template.score + player.floor * 20,
+    boss: false
+  };
+}
+
+async function spawnEnemy() {
+  currentEnemy = createEnemy();
+  renderEnemyVisual(currentEnemy);
+
+  updateUI();
+
+  if (currentEnemy.boss) {
+    playFlash("BOSS", "showLevel");
+    await showMessage(`空気が ふるえている……\n${currentEnemy.name}が あらわれた！`);
+  } else {
+    await showMessage(`${currentEnemy.name}が あらわれた！`);
+  }
+
+  startQuestion();
+}
+
+/* =========================================================
+  クイズ出題処理
+========================================================= */
+
+function getNextQuiz() {
+  const nextNumber = player.totalAnswered + 1;
+  const isChallenge = nextNumber % 10 === 0;
+
+  if (isChallenge) {
+    if (challengeDeck.length === 0) {
+      challengeDeck = shuffle(challengeQuizBank.map((_, i) => i));
+    }
+    const index = challengeDeck.pop();
+    return {
+      ...challengeQuizBank[index],
+      challenge: true
+    };
+  }
+
+  if (questionDeck.length === 0) {
+    questionDeck = shuffle(quizBank.map((_, i) => i));
+  }
+
+  const index = questionDeck.pop();
+  return {
+    ...quizBank[index],
+    challenge: false
+  };
+}
+
+function prepareQuiz(quiz) {
+  const correctText = quiz.choices[quiz.answer];
+  const mixed = shuffle(quiz.choices);
+
+  return {
+    ...quiz,
+    choices: mixed,
+    answer: mixed.indexOf(correctText)
+  };
+}
+
+function startQuestion() {
+  currentQuiz = prepareQuiz(getNextQuiz());
+  isAnswering = true;
+
+  quizBox.classList.remove("hidden");
+  categoryEl.textContent = currentQuiz.challenge
+    ? `★ ${currentQuiz.category}`
+    : currentQuiz.category;
+
+  questionEl.textContent = currentQuiz.question;
+  choicesEl.innerHTML = "";
+
+  currentQuiz.choices.forEach((choice, index) => {
+    const btn = document.createElement("button");
+    btn.className = "choiceBtn";
+    btn.textContent = `${index + 1}. ${choice}`;
+    btn.addEventListener("click", () => answerQuestion(index));
+    choicesEl.appendChild(btn);
+  });
+
+  setQuizEnabled(true);
+  startTimer(currentQuiz.challenge ? 18 : 13);
+}
+
+function startTimer(seconds) {
+  clearInterval(quizTimer);
+  timeLeft = seconds;
+  timerBar.style.width = "100%";
+  timerBar.style.background = "linear-gradient(90deg, #ffe66d, #ffffff)";
+
+  quizTimer = setInterval(() => {
+    timeLeft -= 0.1;
+    const rate = Math.max(0, timeLeft / seconds);
+    timerBar.style.width = `${rate * 100}%`;
+
+    if (rate < 0.3) {
+      timerBar.style.background = "linear-gradient(90deg, #ff6464, #ffe66d)";
+    }
+
+    if (timeLeft <= 0) {
+      clearInterval(quizTimer);
+      answerQuestion(-1);
+    }
+  }, 100);
+}
+
+/* =========================================================
+  バトル処理
+========================================================= */
+
+async function answerQuestion(index) {
+  if (!isAnswering) return;
+
+  isAnswering = false;
+  clearInterval(quizTimer);
+  setQuizEnabled(false);
+  sfx("select");
+
+  const correct = index === currentQuiz.answer;
+  player.totalAnswered++;
+
+  if (correct) {
+    await handleCorrect();
+  } else {
+    await handleWrong(index);
+  }
+
+  updateUI();
+  saveGame();
+}
+
+async function handleCorrect() {
+  sfx("correct");
+  playFlash("正解！", "showCorrect");
+
+  player.correctCount++;
+  player.combo++;
+  player.bestCombo = Math.max(player.bestCombo, player.combo);
+
+  const expGain = currentQuiz.challenge ? 12 : 4;
+  player.exp += expGain;
+
+  const baseDamage = player.quizPower + player.attack + rand(4, 9);
+  const comboBonus = Math.min(30, player.combo * 2);
+  const challengeBonus = currentQuiz.challenge ? 12 : 0;
+  const damage = baseDamage + comboBonus + challengeBonus;
+
+  player.score += currentQuiz.challenge ? 300 : 100;
+  player.score += player.combo * 10;
+
+  await showMessage(`正解！\n${currentQuiz.explanation}`);
+  await checkLevelUp();
+
+  currentEnemy.hp -= damage;
+  animateEnemyDamage();
+
+  sfx("damage");
+  updateUI();
+
+  await showMessage(`${currentEnemy.name}に\n${damage}の ダメージ！`);
+
+  if (currentEnemy.hp <= 0) {
+    await defeatEnemy();
+  } else {
+    startQuestion();
+  }
+}
+
+async function handleWrong(index) {
+  sfx("wrong");
+  playFlash("不正解", "showWrong");
+  screenShake();
+
+  player.wrongCount++;
+  player.combo = 0;
+
+  const correctText = currentQuiz.choices[currentQuiz.answer];
+
+  if (index === -1) {
+    await showMessage(`時間切れ！\n正解は「${correctText}」。\n${currentQuiz.explanation}`);
+  } else {
+    await showMessage(`ざんねん！\n正解は「${correctText}」。\n${currentQuiz.explanation}`);
+  }
+
+  await enemyAttack();
+}
+
+async function enemyAttack() {
+  const rawDamage = currentEnemy.attack + rand(-1, 3);
+  const damage = Math.max(1, rawDamage - player.defense);
+
+  player.hp -= damage;
+  if (player.hp < 0) player.hp = 0;
+
+  sfx("damage");
+  screenShake();
+  updateUI();
+
+  await showMessage(`${currentEnemy.name}の こうげき！\n${damage}の ダメージを 受けた！`);
+
+  if (player.hp <= 0) {
+    await gameOver();
+  } else {
+    startQuestion();
+  }
+}
+
+async function defeatEnemy() {
+  sfx("win");
+
+  player.defeatedCount++;
+  player.exp += currentEnemy.exp;
+  player.score += currentEnemy.score;
+
+  await animateEnemyDefeat();
+
+  await showMessage(`${currentEnemy.name}を たおした！\n${currentEnemy.exp}EXPと ${currentEnemy.score}点を 手に入れた！`);
+
+  await checkLevelUp();
+  await handleDrop(currentEnemy.boss);
+
+  if (currentEnemy.boss) {
+    player.floor++;
+    await showMessage(`フロアボスを たおした！\n第${player.floor}層へ すすみます。`);
+  }
+
+  updateUI();
+  saveGame();
+  await spawnEnemy();
+}
+
+/* =========================================================
+  ドロップ処理
+========================================================= */
+
+async function handleDrop(isBoss) {
+  const roll = Math.random();
+
+  const herbRate = isBoss ? 0.38 : 0.25;
+  const swordRate = isBoss ? 0.12 : 0.05;
+
+  if (roll < swordRate) {
+    player.attack += 1;
+    player.quizPower += 1;
+    sfx("level");
+    playFlash("武器入手！", "showLevel");
+    await showMessage(`学びの剣を 手に入れた！\n攻撃力とクイズ力が 1 あがった！`);
+    return;
+  }
+
+  if (roll < swordRate + herbRate) {
+    const heal = rand(12, 24) + player.floor * 2;
+    const before = player.hp;
+    player.hp = Math.min(player.maxHp, player.hp + heal);
+    const actual = player.hp - before;
+
+    playFlash("回復！", "showCorrect");
+    await showMessage(`やくそうを 見つけた！\nHPが ${actual} 回復した！`);
+    return;
+  }
+}
+
+/* =========================================================
+  レベルアップ処理
+========================================================= */
+
+async function checkLevelUp() {
+  while (player.exp >= player.nextExp) {
+    player.exp -= player.nextExp;
+    player.level++;
+
+    const hpUp = rand(4, 8);
+    player.maxHp += hpUp;
+    player.attack += 1;
+    player.defense += player.level % 2 === 0 ? 1 : 0;
+    player.quizPower += 2;
+    player.nextExp = Math.floor(player.nextExp * 1.35 + 10);
+    player.hp = player.maxHp;
+
+    updateUI();
+    sfx("level");
+    playFlash("LEVEL UP!", "showLevel");
+
+    await showMessage(`レベルが あがった！\nLv ${player.level}になった！\n最大HPが ${hpUp} あがった！`);
+  }
+}
+
+/* =========================================================
+  スコア保存・ゲームオーバー
+========================================================= */
+
+function getEvaluation(accuracy) {
+  if (accuracy >= 90) return "すごい！教学マスター級のひらめきです！";
+  if (accuracy >= 70) return "かなりいい感じ！学びの力が光っています！";
+  if (accuracy >= 50) return "ここからさらに伸びます！もう一度挑戦してみましょう！";
+  return "大丈夫。遊びながら少しずつ覚えていきましょう！";
+}
+
+async function gameOver() {
+  sfx("gameover");
+  quizBox.classList.add("hidden");
+
+  const accuracy = player.totalAnswered
+    ? Math.round(player.correctCount / player.totalAnswered * 100)
+    : 0;
+
+  player.score += player.level * 200;
+  player.score += player.bestCombo * 50;
+  player.score += Math.max(0, player.hp) * 5;
+
+  const highUpdated = saveHistory();
+  deleteSave();
+
+  resultTitle.textContent = "GAME OVER";
+  resultBody.innerHTML = `
+    ${highUpdated ? '<span class="gold">ハイスコア更新！</span><br>' : ''}
+    今回のスコア：<span class="gold">${player.score}</span><br>
+    最高スコア：${getHighScore()}<br>
+    到達レベル：${player.level}<br>
+    撃破数：${player.defeatedCount}<br>
+    正解数：${player.correctCount}/${player.totalAnswered}<br>
+    正答率：${accuracy}%<br>
+    最高コンボ：${player.bestCombo}<br><br>
+    ${getEvaluation(accuracy)}
+  `;
+
+  historyList.classList.add("hidden");
+  closeOverlayBtn.textContent = "タイトルへ";
+  resultOverlay.classList.remove("hidden");
+}
+
+function showHistory() {
+  initAudio();
+  sfx("select");
+
+  const history = getHistory();
+
+  resultTitle.textContent = "スコア履歴";
+  resultBody.innerHTML = history.length
+    ? "過去5回分の記録です。"
+    : "まだ記録がありません。";
+
+  historyList.classList.remove("hidden");
+  historyList.innerHTML = history.length
+    ? history.map((h, i) => `
+      <div class="window" style="margin-bottom:8px;">
+        ${i + 1}. ${h.date}<br>
+        スコア：<span class="gold">${h.score}</span><br>
+        Lv：${h.level} / 撃破：${h.defeated}<br>
+        正答率：${h.accuracy}% / 最高コンボ：${h.bestCombo}
+      </div>
+    `).join("")
+    : "";
+
+  closeOverlayBtn.textContent = "閉じる";
+  resultOverlay.classList.remove("hidden");
+}
+
+/* =========================================================
+  ゲーム開始
+========================================================= */
+
+async function startNewGame() {
+  initAudio();
+  sfx("select");
+
+  player = createNewPlayer();
+  resetDecks();
+
+  titleScreen.classList.add("hidden");
+  resultOverlay.classList.add("hidden");
+  quizBox.classList.add("hidden");
+
+  updateUI();
+
+  await showMessage("希望の勇者よ、出発です。\n教学クイズで 迷いを照らしましょう！");
+  await spawnEnemy();
+}
+
+async function continueGame() {
+  initAudio();
+  sfx("select");
+
+  if (!loadGame()) {
+    alert("セーブデータがありません。");
+    return;
+  }
+
+  titleScreen.classList.add("hidden");
+  resultOverlay.classList.add("hidden");
+  quizBox.classList.add("hidden");
+
+  updateUI();
+
+  await showMessage("冒険を 再開します。");
+  await spawnEnemy();
+}
+
+/* =========================================================
+  イベント登録
+========================================================= */
+
+startBtn.addEventListener("click", startNewGame);
+continueBtn.addEventListener("click", continueGame);
+historyBtn.addEventListener("click", showHistory);
+
+deleteBtn.addEventListener("click", () => {
+  initAudio();
+  sfx("select");
+
+  const ok = confirm("セーブデータを削除しますか？\nスコア履歴は残ります。");
+  if (ok) {
+    deleteSave();
+    updateUI();
+    alert("セーブデータを削除しました。");
+  }
+});
+
+closeOverlayBtn.addEventListener("click", () => {
+  resultOverlay.classList.add("hidden");
+  historyList.classList.add("hidden");
+  titleScreen.classList.remove("hidden");
+  updateUI();
+});
+
+/* =========================================================
+  起動処理
+========================================================= */
+
+function boot() {
+  player = createNewPlayer();
+  resetDecks();
+  updateUI();
+
+  const high = getHighScore();
+  if (high > 0) {
+    scoreText.textContent = `最高 ${high}点`;
+  }
+}
+
+boot();
+</script>
+</body>
+</html>
