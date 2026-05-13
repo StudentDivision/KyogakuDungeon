@@ -1371,18 +1371,18 @@ body.quiz-active #enemyImage {
 
   <!-- 敵表示 -->
   <section id="enemyArea" class="window">
-    <div class="enemyName" id="enemyName">---</div>
+    <div class="enemyName" id="enemyName"></div>
 
     <div class="enemyStage">
       <img id="enemyImage" class="hidden" src="" alt="敵キャラ">
-      <div id="monster" class="monster seed">
+      <div id="monster" class="monster seed hidden">
         <div class="eye left"></div>
         <div class="eye right"></div>
         <div class="mouth"></div>
       </div>
     </div>
 
-    <div class="enemyMeta" id="enemyHpText">HP --/--</div>
+    <div class="enemyMeta" id="enemyHpText"></div>
     <div class="barOuter" style="width:100%; max-width:270px;">
       <div id="enemyHpBar" class="barInner"></div>
     </div>
@@ -2101,9 +2101,15 @@ function updateUI() {
   expBar.style.width = `${Math.max(0, Math.min(100, player.exp / player.nextExp * 100))}%`;
 
   if (currentEnemy) {
-    enemyName.textContent = currentEnemy.name;
-    enemyHpText.textContent = `HP ${Math.max(0, currentEnemy.hp)}/${currentEnemy.maxHp}`;
-    enemyHpBar.style.width = `${Math.max(0, currentEnemy.hp / currentEnemy.maxHp * 100)}%`;
+  enemyName.textContent = currentEnemy.name;
+  enemyHpText.textContent = `HP ${Math.max(0, currentEnemy.hp)}/${currentEnemy.maxHp}`;
+  enemyHpBar.style.width = `${Math.max(0, currentEnemy.hp / currentEnemy.maxHp * 100)}%`;
+  } else {
+  enemyName.textContent = "";
+  enemyHpText.textContent = "";
+  enemyHpBar.style.width = "0%";
+  enemyImage.classList.add("hidden");
+  monster.classList.add("hidden");
   }
 
   continueBtn.disabled = !localStorage.getItem(SAVE_KEY);
