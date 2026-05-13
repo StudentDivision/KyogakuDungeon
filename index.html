@@ -1678,6 +1678,64 @@ body.quiz-active #enemyImage {
     drop-shadow(0 0 16px rgba(255,255,255,.55));
   animation: eagleFloat 2.4s ease-in-out infinite;
 }
+
+  /* =========================================================
+  敵エリア専用：背景画像表示
+  フロアごとに --enemy-bg が変わる
+========================================================= */
+
+#enemyArea {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, rgba(8, 58, 170, .48), rgba(3, 18, 90, .76)),
+    var(--enemy-bg, linear-gradient(180deg, #58c8ff, #1268d7));
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  transition:
+    background-image .35s ease,
+    filter .35s ease;
+}
+
+/* 背景の上に淡い光を足して、今の青UIと馴染ませる */
+#enemyArea::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 50% 34%, rgba(255,255,255,.22), transparent 26%),
+    radial-gradient(ellipse at 50% 88%, rgba(139,233,255,.28), transparent 36%);
+  pointer-events: none;
+}
+
+/* 敵・文字・HPバーを背景より前に出す */
+#enemyArea .enemyName,
+#enemyArea .enemyStage,
+#enemyArea .enemyMeta,
+#enemyArea .barOuter {
+  position: relative;
+  z-index: 1;
+}
+
+/* ボス戦だけ少しドラマチックにする */
+#enemyArea.boss-scene {
+  background:
+    linear-gradient(180deg, rgba(70, 10, 95, .45), rgba(0, 0, 20, .78)),
+    var(--enemy-bg, linear-gradient(180deg, #4a1d72, #241020));
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.10),
+    0 0 22px rgba(255,230,109,.22),
+    0 5px 0 rgba(0,0,0,.24);
+}
+
+#enemyArea.boss-scene::before {
+  background:
+    radial-gradient(circle at 50% 34%, rgba(255,230,109,.26), transparent 24%),
+    radial-gradient(ellipse at 50% 88%, rgba(255,90,80,.22), transparent 34%);
+}
   
 </style>
 </head>
@@ -1854,6 +1912,7 @@ const comboText = $("comboText");
 const bestComboText = $("bestComboText");
 const accuracyText = $("accuracyText");
 
+const enemyArea = $("enemyArea");
 const enemyName = $("enemyName");
 const enemyImage = $("enemyImage");
 const monster = $("monster");
@@ -1919,6 +1978,24 @@ function updateFloorBackground() {
 }
 
 /* =========================================================
+  敵エリア背景画像切り替え
+========================================================= */
+
+function updateEnemyBackground() {
+  if (!enemyArea || !player || !player.floor) return;
+
+  const bgIndex = (player.floor - 1) % enemyBackgrounds.length;
+  const bgPath = enemyBackgrounds[bgIndex];
+
+  enemyArea.style.setProperty("--enemy-bg", `url("${bgPath}")`);
+
+  if (currentEnemy && currentEnemy.boss) {
+    enemyArea.classList.add("boss-scene");
+  } else {
+    enemyArea.classList.remove("boss-scene");
+  }
+}
+/* =========================================================
   敵データ
   image に画像パスを入れると画像表示になります。
   例：image: "assets/images/mayoi_seed.png"
@@ -1949,6 +2026,23 @@ const bossImages = [
   "assets/images/boss_03.png"
 ];
 
+/* =========================================================
+  敵エリア背景画像
+  10体撃破ごとにフロアが進み、背景も変わります
+========================================================= */
+
+const enemyBackgrounds = [
+  "assets/backgrounds/bg_01_forest.webp",
+  "assets/backgrounds/bg_02_sea.webp",
+  "assets/backgrounds/bg_03_mountain.webp",
+  "assets/backgrounds/bg_04_sky.webp",
+  "assets/backgrounds/bg_05_town.webp",
+  "assets/backgrounds/bg_06_night_forest.webp",
+  "assets/backgrounds/bg_07_temple.webp",
+  "assets/backgrounds/bg_08_volcano.webp",
+  "assets/backgrounds/bg_09_snow.webp",
+  "assets/backgrounds/bg_10_light.webp"
+];
 
 /* =========================================================
   初期化
@@ -2160,6 +2254,7 @@ messageBox.addEventListener("click", () => {
 
 function updateUI() {
   updateFloorBackground();
+  updateEnemyBackground();
   floorText.textContent = ` 第${player.floor}層`;
   scoreText.textContent = `${player.score}点`;
 
@@ -2570,6 +2665,7 @@ async function defeatEnemy() {
   if (currentEnemy.boss) {
     player.floor++;
     updateFloorBackground();
+    updateEnemyBackground();
     await showMessage(`フロアボスを たおした！\n第${player.floor}層へ すすみます。`);
   }
 
