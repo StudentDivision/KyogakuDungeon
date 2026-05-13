@@ -2412,6 +2412,9 @@ let skipTyping = false;
 
 function showMessage(text) {
   document.body.classList.remove("quiz-active");
+
+  // メッセージ表示中はクイズ欄を隠す
+  quizBox.classList.add("hidden");
   
   return new Promise(async (resolve) => {
     messageResolve = resolve;
