@@ -1795,6 +1795,15 @@ body.quiz-active #enemyImage {
 </head>
 
 <body>
+
+<audio id="battleBgm1" src="assets/audio/battle_01.mp3" loop preload="auto"></audio>
+<audio id="battleBgm2" src="assets/audio/battle_02.mp3" loop preload="auto"></audio>
+<audio id="battleBgm3" src="assets/audio/battle_03.mp3" loop preload="auto"></audio>
+<audio id="battleBgm4" src="assets/audio/battle_04.mp3" loop preload="auto"></audio>
+<audio id="battleBgm5" src="assets/audio/battle_05.mp3" loop preload="auto"></audio>
+<audio id="bossBgm" src="assets/audio/boss.mp3" loop preload="auto"></audio>
+<audio id="clearBgm" src="assets/audio/clear.mp3" loop preload="auto"></audio>
+  
 <div id="app">
 
   <div id="flashLayer">
@@ -1993,6 +2002,14 @@ const flashLayer = $("flashLayer");
 const flashText = $("flashText");
 const backTitleBtn = $("backTitleBtn");
 
+const battleBgm1 = $("battleBgm1");
+const battleBgm2 = $("battleBgm2");
+const battleBgm3 = $("battleBgm3");
+const battleBgm4 = $("battleBgm4");
+const battleBgm5 = $("battleBgm5");
+const bossBgm = $("bossBgm");
+const clearBgm = $("clearBgm");
+
 /* =========================================================
   保存キー
 ========================================================= */
@@ -2000,6 +2017,8 @@ const backTitleBtn = $("backTitleBtn");
 const SAVE_KEY = "kibou_quiz_battle_save_v2";
 const HISTORY_KEY = "kibou_quiz_battle_history_v2";
 const HIGH_SCORE_KEY = "kibou_quiz_battle_high_score_v2";
+
+const CLEAR_CORRECT_COUNT = 100;
 
 /* =========================================================
   プレイヤーデータ
@@ -2209,6 +2228,87 @@ function sfx(type) {
 }
 
 /* =========================================================
+  外部音源BGM処理
+========================================================= */
+
+let currentMusic = null;
+let musicVolume = 0.32;
+
+function getBattleBgmByFloor() {
+  const battleList = [
+    battleBgm1,
+    battleBgm2,
+    battleBgm3,
+    battleBgm4,
+    battleBgm5
+  ];
+
+  const index = (player.floor - 1) % battleList.length;
+  return battleList[index];
+}
+
+function setupMusicVolume() {
+  [
+    battleBgm1,
+    battleBgm2,
+    battleBgm3,
+    battleBgm4,
+    battleBgm5,
+    bossBgm,
+    clearBgm
+  ].forEach(audio => {
+    if (audio) audio.volume = musicVolume;
+  });
+}
+
+function stopAllMusic() {
+  [
+    battleBgm1,
+    battleBgm2,
+    battleBgm3,
+    battleBgm4,
+    battleBgm5,
+    bossBgm,
+    clearBgm
+  ].forEach(audio => {
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  });
+
+  currentMusic = null;
+}
+
+function playMusic(audio) {
+  if (!audio) return;
+
+  setupMusicVolume();
+
+  if (currentMusic === audio && !audio.paused) return;
+
+  stopAllMusic();
+
+  currentMusic = audio;
+  audio.currentTime = 0;
+
+  audio.play().catch(() => {
+    console.log("BGMは最初のタップ後に再生されます。");
+  });
+}
+
+function playBattleBgm() {
+  playMusic(getBattleBgmByFloor());
+}
+
+function playBossBgm() {
+  playMusic(bossBgm);
+}
+
+function playClearBgm() {
+  playMusic(clearBgm);
+}
+
+/* =========================================================
   演出処理
 ========================================================= */
 
@@ -2309,7 +2409,7 @@ messageBox.addEventListener("click", () => {
 function updateUI() {
   updateFloorBackground();
   updateEnemyBackground();
-  floorText.textContent = ` 第${player.floor}層`;
+  floorText.textContent = ` 第${player.floor}層 ${player.correctCount}/${CLEAR_CORRECT_COUNT}`;
   scoreText.textContent = `${player.score}点`;
 
   levelText.textContent = player.level;
@@ -2461,27 +2561,44 @@ function createEnemy() {
   const nextCount = player.defeatedCount + 1;
   const isBoss = nextCount % 10 === 0;
 
+  // 進行度。10体撃破ごとに1段階上がるイメージ
+  const progressRank = Math.floor(player.defeatedCount / 10);
+
+  // 正解数でも難易度が少し上がる
+  const correctRank = Math.floor(player.correctCount / 20);
+
+  // 全体難易度倍率
+  const difficultyRate = 1 + progressRank * 0.18 + correctRank * 0.08;
+
   if (isBoss) {
     const bossIndex = Math.min(player.floor - 1, bossNames.length - 1);
-    const baseHp = 70 + player.floor * 20 + player.defeatedCount * 3;
-    const baseAtk = 8 + player.floor * 3;
+
+    const baseHp = 80 + player.floor * 24 + player.defeatedCount * 4;
+    const baseAtk = 9 + player.floor * 3 + progressRank;
+
+    const hp = Math.floor(baseHp * difficultyRate);
+    const atk = Math.floor(baseAtk * (1 + progressRank * 0.08));
 
     return {
       name: bossNames[bossIndex],
       type: "boss",
       image: bossImages[bossIndex] || "",
-      hp: baseHp,
-      maxHp: baseHp,
-      attack: baseAtk,
-      exp: 35 + player.floor * 8,
-      score: 700 + player.floor * 120,
+      hp,
+      maxHp: hp,
+      attack: atk,
+      exp: 40 + player.floor * 10 + progressRank * 4,
+      score: 800 + player.floor * 150 + progressRank * 80,
       boss: true
     };
   }
 
   const template = enemyTemplates[rand(0, enemyTemplates.length - 1)];
-  const hp = template.baseHp + player.floor * 5 + player.defeatedCount;
-  const atk = template.baseAtk + player.floor * 2 + Math.floor(player.defeatedCount / 10);
+
+  const baseHp = template.baseHp + player.floor * 7 + player.defeatedCount * 2;
+  const baseAtk = template.baseAtk + player.floor * 2 + Math.floor(player.defeatedCount / 8);
+
+  const hp = Math.floor(baseHp * difficultyRate);
+  const atk = Math.floor(baseAtk * (1 + progressRank * 0.06));
 
   return {
     name: template.name,
@@ -2490,8 +2607,8 @@ function createEnemy() {
     hp,
     maxHp: hp,
     attack: atk,
-    exp: template.exp + player.floor * 2,
-    score: template.score + player.floor * 20,
+    exp: template.exp + player.floor * 3 + progressRank,
+    score: template.score + player.floor * 30 + progressRank * 20,
     boss: false
   };
 }
@@ -2502,12 +2619,14 @@ async function spawnEnemy() {
 
   updateUI();
 
-  if (currentEnemy.boss) {
-    playFlash("BOSS", "showLevel");
-    await showMessage(`空気が ふるえている……\n${currentEnemy.name}が あらわれた！`);
-  } else {
-    await showMessage(`${currentEnemy.name}が あらわれた！`);
-  }
+ if (currentEnemy.boss) {
+  playBossBgm();
+  playFlash("BOSS", "showLevel");
+  await showMessage(`空気が ふるえている……\n${currentEnemy.name}が あらわれた！`);
+ } else {
+  playBattleBgm();
+  await showMessage(`${currentEnemy.name}が あらわれた！`);
+ }
 
   startQuestion();
 }
@@ -2634,6 +2753,13 @@ async function handleCorrect() {
   player.combo++;
   player.bestCombo = Math.max(player.bestCombo, player.combo);
 
+  if (player.correctCount >= CLEAR_CORRECT_COUNT) {
+  updateUI();
+  saveGame();
+  await gameClear();
+  return;
+}
+
   const expGain = currentQuiz.challenge ? 12 : 4;
   player.exp += expGain;
 
@@ -2720,6 +2846,9 @@ async function defeatEnemy() {
     player.floor++;
     updateFloorBackground();
     updateEnemyBackground();
+
+    playBattleBgm();
+    
     await showMessage(`フロアボスを たおした！\n第${player.floor}層へ すすみます。`);
   }
 
@@ -2795,7 +2924,59 @@ function getEvaluation(accuracy) {
   return "大丈夫。遊びながら少しずつ覚えていきましょう！";
 }
 
+/* =========================================================
+  エンディング・ゲームクリア
+========================================================= */
+
+async function gameClear() {
+  clearInterval(quizTimer);
+  isAnswering = false;
+  quizBox.classList.add("hidden");
+  document.body.classList.remove("quiz-active");
+
+  stopAllMusic();
+  playClearBgm();
+
+  sfx("level");
+  playFlash("CLEAR!", "showLevel");
+
+  // クリアボーナス
+  player.score += 10000;
+  player.score += player.level * 300;
+  player.score += player.bestCombo * 100;
+
+  const accuracy = player.totalAnswered
+    ? Math.round(player.correctCount / player.totalAnswered * 100)
+    : 0;
+
+  const highUpdated = saveHistory();
+  deleteSave();
+
+  await showMessage("まばゆい光が あたりを包んだ……\nあなたの学びの旅は、大きな実りをむかえました！");
+
+  resultTitle.textContent = "CLEAR!";
+  resultBody.innerHTML = `
+    <span class="gold">クリアおめでとう！</span><br>
+    100問正解を達成しました！<br><br>
+    最終スコア：<span class="gold">${player.score}</span><br>
+    ${highUpdated ? '<span class="gold">ハイスコア更新！</span><br>' : ''}
+    最高スコア：${getHighScore()}<br>
+    到達レベル：${player.level}<br>
+    撃破数：${player.defeatedCount}<br>
+    正解数：${player.correctCount}/${player.totalAnswered}<br>
+    正答率：${accuracy}%<br>
+    最高コンボ：${player.bestCombo}<br><br>
+    学びの光は、迷いを照らす力になりました。<br>
+    また新たな冒険へ出発しましょう！
+  `;
+
+  historyList.classList.add("hidden");
+  closeOverlayBtn.textContent = "タイトルへ";
+  resultOverlay.classList.remove("hidden");
+}
+
 async function gameOver() {
+  stopAllMusic();
   sfx("gameover");
   quizBox.classList.add("hidden");
 
@@ -2864,6 +3045,7 @@ async function startNewGame() {
   sfx("select");
 
   player = createNewPlayer();
+  playBattleBgm();
   resetDecks();
 
   titleScreen.classList.add("hidden");
@@ -2884,6 +3066,8 @@ async function continueGame() {
     alert("セーブデータがありません。");
     return;
   }
+
+  playBattleBgm();
 
   titleScreen.classList.add("hidden");
   resultOverlay.classList.add("hidden");
@@ -2916,6 +3100,8 @@ deleteBtn.addEventListener("click", () => {
 });
 
 closeOverlayBtn.addEventListener("click", () => {
+  stopAllMusic();
+  
   resultOverlay.classList.add("hidden");
   historyList.classList.add("hidden");
   titleScreen.classList.remove("hidden");
@@ -2933,6 +3119,7 @@ closeOverlayBtn.addEventListener("click", () => {
   clearInterval(quizTimer);
   isAnswering = false;
   saveGame();
+  stopAllMusic();
 
   location.reload();
 });
