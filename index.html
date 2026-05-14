@@ -2432,7 +2432,7 @@ function createNewPlayer() {
   return {
     level: 1,
     exp: 0,
-    nextExp: 20,
+    nextExp: 14,
 
     hp: 30,
     maxHp: 30,
@@ -2472,12 +2472,19 @@ function resetDecks() {
 let audioCtx = null;
 
 function initAudio() {
-  if (audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  // iPhone / Android で AudioContext が止まっている場合に再開する
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume().catch(() => {});
+  }
 }
 
-function tone(freq, duration = .08, type = "square", volume = .025) {
-  if (!audioCtx) return;
+function tone(freq, duration = .08, type = "square", volume = .035) {
+  if (!audioCtx || audioCtx.state !== "running") return;
+
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
 
@@ -2495,7 +2502,9 @@ function tone(freq, duration = .08, type = "square", volume = .025) {
 }
 
 function sfx(type) {
-  if (!audioCtx) return;
+  initAudio();
+
+  if (!audioCtx || audioCtx.state !== "running") return;
 
   if (type === "select") {
     tone(740, .05);
@@ -2956,39 +2965,42 @@ function createEnemy() {
   const isBoss = nextEnemyNumber % 10 === 0;
 
   const progressRank = Math.floor(player.defeatedCount / 10);
-  const correctRank = Math.floor(player.correctCount / 20);
-  const difficultyRate = 1 + progressRank * 0.14 + correctRank * 0.06;
+  const correctRank = Math.floor(player.correctCount / 25);
+
+  // 以前より上昇倍率を控えめにする
+  const difficultyRate = 1 + progressRank * 0.08 + correctRank * 0.03;
 
   if (isBoss) {
     const bossIndex = Math.min(player.floor - 1, bossNames.length - 1);
-    const bossImageIndex = (player.floor - 1) % bossImages.length;
 
-    const baseHp = 85 + player.floor * 24 + progressRank * 18;
-    const baseAtk = 9 + player.floor * 3 + progressRank;
+    // ボスHPも伸びすぎないよう調整
+    const baseHp = 72 + player.floor * 15 + progressRank * 10;
+    const baseAtk = 8 + player.floor * 2 + Math.floor(progressRank / 2);
 
     const hp = Math.floor(baseHp * difficultyRate);
-    const atk = Math.floor(baseAtk * (1 + progressRank * 0.05));
+    const atk = Math.floor(baseAtk * (1 + progressRank * 0.025));
 
     return {
-    name: bossNames[bossIndex] || `第${player.floor}層の番人`,
-   type: "boss",
-   image: bossImages[bossImageIndex] || "assets/images/boss_01.png",
-   hp,
-   maxHp: hp,
-   attack: atk,
-   exp: 40 + player.floor * 10 + progressRank * 4,
-   score: 800 + player.floor * 150 + progressRank * 80,
-   boss: true
-   };
+      name: bossNames[bossIndex] || `第${player.floor}層の番人`,
+      type: "boss",
+      image: bossImages[bossIndex] || "assets/images/boss_01.png",
+      hp,
+      maxHp: hp,
+      attack: atk,
+      exp: 50 + player.floor * 12 + progressRank * 6,
+      score: 800 + player.floor * 150 + progressRank * 80,
+      boss: true
+    };
   }
 
   const template = enemyTemplates[rand(0, enemyTemplates.length - 1)];
 
-  const baseHp = template.baseHp + player.floor * 6 + progressRank * 6;
-  const baseAtk = template.baseAtk + player.floor * 2 + Math.floor(progressRank / 2);
+  // 通常敵HPの伸びをかなり控えめにする
+  const baseHp = template.baseHp + player.floor * 3 + progressRank * 3;
+  const baseAtk = template.baseAtk + player.floor + Math.floor(progressRank / 3);
 
   const hp = Math.floor(baseHp * difficultyRate);
-  const atk = Math.floor(baseAtk * (1 + progressRank * 0.04));
+  const atk = Math.floor(baseAtk * (1 + progressRank * 0.02));
 
   return {
     name: template.name,
@@ -2997,7 +3009,7 @@ function createEnemy() {
     hp,
     maxHp: hp,
     attack: atk,
-    exp: template.exp + player.floor * 3 + progressRank,
+    exp: template.exp + player.floor * 4 + progressRank * 2,
     score: template.score + player.floor * 30 + progressRank * 20,
     boss: false
   };
@@ -3143,12 +3155,12 @@ async function handleCorrect() {
   player.combo++;
   player.bestCombo = Math.max(player.bestCombo, player.combo);
 
-  const expGain = currentQuiz.challenge ? 12 : 4;
+  const expGain = currentQuiz.challenge ? 18 : 7;
   player.exp += expGain;
 
-  const baseDamage = player.quizPower + player.attack + rand(4, 9);
-  const comboBonus = Math.min(30, player.combo * 2);
-  const challengeBonus = currentQuiz.challenge ? 12 : 0;
+  const baseDamage = player.quizPower + player.attack + rand(6, 12);
+  const comboBonus = Math.min(40, player.combo * 3);
+  const challengeBonus = currentQuiz.challenge ? 18 : 0;
   const damage = baseDamage + comboBonus + challengeBonus;
 
   player.score += currentQuiz.challenge ? 300 : 100;
@@ -3288,19 +3300,30 @@ async function checkLevelUp() {
     player.exp -= player.nextExp;
     player.level++;
 
-    const hpUp = rand(4, 8);
+    const hpUp = rand(5, 9);
+    const attackUp = player.level % 3 === 0 ? 3 : 2;
+    const quizPowerUp = player.level % 2 === 0 ? 3 : 2;
+
     player.maxHp += hpUp;
-    player.attack += 1;
+    player.attack += attackUp;
     player.defense += player.level % 2 === 0 ? 1 : 0;
-    player.quizPower += 2;
-    player.nextExp = Math.floor(player.nextExp * 1.35 + 10);
+    player.quizPower += quizPowerUp;
+
+    // 次レベルまでの必要EXPの増え方をゆるやかにする
+    player.nextExp = Math.floor(player.nextExp * 1.22 + 8);
+
     player.hp = player.maxHp;
 
     updateUI();
     sfx("level");
     playFlash("LEVEL UP!", "showLevel");
 
-    await showMessage(`レベルが あがった！\nLv ${player.level}になった！\n最大HPが ${hpUp} あがった！`);
+    await showMessage(
+      `レベルが あがった！\n` +
+      `Lv ${player.level}になった！\n` +
+      `最大HPが ${hpUp} あがった！\n` +
+      `攻撃力が ${attackUp} あがった！`
+    );
   }
 }
 
@@ -3480,8 +3503,13 @@ async function continueGame() {
   イベント登録
 ========================================================= */
 
-tapStartBtn.addEventListener("click", () => {
+tapStartBtn.addEventListener("click", async () => {
   initAudio();
+
+  if (audioCtx && audioCtx.state === "suspended") {
+    await audioCtx.resume().catch(() => {});
+  }
+
   sfx("select");
   playTitleBgm();
 
