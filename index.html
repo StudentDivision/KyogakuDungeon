@@ -2076,7 +2076,9 @@ body.title-menu-open .tapStartBtn {
 <audio id="battleBgm9" src="assets/audio/battle_09.mp3" loop preload="auto"></audio>
 <audio id="battleBgm10" src="assets/audio/battle_10.mp3" loop preload="auto"></audio>
 
-<audio id="bossBgm" src="assets/audio/boss.mp3" loop preload="auto"></audio>
+<audio id="bossBgm1" src="assets/audio/boss_01.mp3" loop preload="auto"></audio>
+<audio id="bossBgm2" src="assets/audio/boss_02.mp3" loop preload="auto"></audio>
+<audio id="bossBgm3" src="assets/audio/boss_03.mp3" loop preload="auto"></audio>
 <audio id="clearBgm" src="assets/audio/clear.mp3" loop preload="auto"></audio>
   
 <div id="app">
@@ -2293,7 +2295,9 @@ const battleBgm7 = $("battleBgm7");
 const battleBgm8 = $("battleBgm8");
 const battleBgm9 = $("battleBgm9");
 const battleBgm10 = $("battleBgm10");
-const bossBgm = $("bossBgm");
+const bossBgm1 = $("bossBgm1");
+const bossBgm2 = $("bossBgm2");
+const bossBgm3 = $("bossBgm3");
 const clearBgm = $("clearBgm");
 
 /* =========================================================
@@ -2538,7 +2542,7 @@ function sfx(type) {
 ========================================================= */
 
 let currentMusic = null;
-let musicVolume = 0.12;
+let musicVolume = 0.10;
 
 function getBattleBgmList() {
   return [
@@ -2559,7 +2563,7 @@ function getAllMusicTracks() {
   return [
     titleBgm,
     ...getBattleBgmList(),
-    bossBgm,
+    ...getBossBgmList(),
     clearBgm
   ];
 }
@@ -2650,11 +2654,43 @@ function playTitleBgm() {
 }
 
 function playBossBgm() {
-  playMusic(bossBgm);
+  playMusic(getRandomBossBgm(), true);
 }
 
 function playClearBgm() {
   playMusic(clearBgm);
+}
+
+  let bossBgmIndex = -1;
+
+function getBossBgmList() {
+  return [
+    bossBgm1,
+    bossBgm2,
+    bossBgm3
+  ];
+}
+
+function pickRandomBossBgmIndex() {
+  const list = getBossBgmList();
+
+  if (list.length <= 1) return 0;
+
+  let nextIndex = Math.floor(Math.random() * list.length);
+
+  // 同じボスBGMが連続しないようにする
+  while (nextIndex === bossBgmIndex) {
+    nextIndex = Math.floor(Math.random() * list.length);
+  }
+
+  bossBgmIndex = nextIndex;
+  return nextIndex;
+}
+
+function getRandomBossBgm() {
+  const list = getBossBgmList();
+  const index = pickRandomBossBgmIndex();
+  return list[index] || list[0];
 }
 
 /* =========================================================
