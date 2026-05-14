@@ -2181,6 +2181,83 @@ body.title-menu-open .tapStartBtn {
     transform: translateX(-1px) translateY(-3px);
   }
 }
+
+/* =========================================================
+  タイトルロゴ最終調整：キョウガク / ダンジョンのバランス統一
+========================================================= */
+
+.titleHero .titleMain {
+  width: min(100%, 390px) !important;
+  margin: 4px auto 10px !important;
+  display: grid !important;
+  grid-template-rows: auto auto !important;
+  justify-items: center !important;
+  align-items: center !important;
+  gap: 0 !important;
+  line-height: 0.82 !important;
+  text-align: center !important;
+  transform: none !important;
+}
+
+/* 共通：まず同じ文字サイズにそろえる */
+.titleHero .titleTop,
+.titleHero .titleBottom {
+  display: block !important;
+  width: 100% !important;
+  font-size: clamp(48px, 12vw, 68px) !important;
+  font-weight: 900 !important;
+  line-height: 0.9 !important;
+  letter-spacing: 0.02em !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  transform-origin: center center !important;
+}
+
+/* 上段：キョウガク。少しだけ横幅を抑える */
+.titleHero .titleTop {
+  color: #ffe66d !important;
+  transform: scaleX(0.96) translateY(0) !important;
+  text-shadow:
+    0 2px 0 #fff3b0,
+    3px 3px 0 #5a78d6,
+    6px 6px 0 #3450a8,
+    0 0 18px rgba(255, 240, 150, 0.30) !important;
+}
+
+/* 下段：ダンジョン。少し横に広げて、上に寄せる */
+.titleHero .titleBottom {
+  color: #f7faff !important;
+  transform: scaleX(1.04) translateY(-5px) !important;
+  -webkit-text-stroke: 1px rgba(0, 45, 150, 0.75);
+  text-shadow:
+    0 2px 0 #d7e6ff,
+    3px 3px 0 #4f85df,
+    6px 6px 0 #2d5fb7,
+    0 0 16px rgba(255,255,255,0.22) !important;
+}
+
+/* 横幅が狭いスマホ用 */
+@media (max-width: 480px) {
+  .titleHero .titleMain {
+    width: min(100%, 350px) !important;
+    margin: 2px auto 8px !important;
+    line-height: 0.8 !important;
+  }
+
+  .titleHero .titleTop,
+  .titleHero .titleBottom {
+    font-size: clamp(42px, 12.2vw, 58px) !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  .titleHero .titleTop {
+    transform: scaleX(0.96) translateY(0) !important;
+  }
+
+  .titleHero .titleBottom {
+    transform: scaleX(1.04) translateY(-4px) !important;
+  }
+}
   
 </style>
 </head>
