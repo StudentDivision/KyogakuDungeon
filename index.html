@@ -2235,6 +2235,7 @@ function createNewPlayer() {
 
     defeatedCount: 0,
     floor: 1,
+    enemiesSinceBoss: 0,
 
     battleBgmIndex: -1,
 
@@ -2635,6 +2636,15 @@ function loadGame() {
 
   try {
     player = JSON.parse(raw);
+
+    if (player.enemiesSinceBoss === undefined) {
+      player.enemiesSinceBoss = 0;
+    }
+
+    if (player.battleBgmIndex === undefined) {
+      player.battleBgmIndex = -1;
+    }
+
     resetDecks();
     return true;
   } catch {
@@ -2694,29 +2704,23 @@ function saveHistory() {
 ========================================================= */
 
 function createEnemy() {
-  const nextCount = player.defeatedCount + 1;
-  const isBoss = nextCount % 10 === 0;
+  const isBoss = player.enemiesSinceBoss >= 10;
 
-  // 進行度。10体撃破ごとに1段階上がるイメージ
   const progressRank = Math.floor(player.defeatedCount / 10);
-
-  // 正解数でも難易度が少し上がる
   const correctRank = Math.floor(player.correctCount / 20);
-
-  // 全体難易度倍率
-  const difficultyRate = 1 + progressRank * 0.18 + correctRank * 0.08;
+  const difficultyRate = 1 + progressRank * 0.14 + correctRank * 0.06;
 
   if (isBoss) {
     const bossIndex = Math.min(player.floor - 1, bossNames.length - 1);
 
-    const baseHp = 80 + player.floor * 24 + player.defeatedCount * 4;
+    const baseHp = 85 + player.floor * 24 + progressRank * 18;
     const baseAtk = 9 + player.floor * 3 + progressRank;
 
     const hp = Math.floor(baseHp * difficultyRate);
-    const atk = Math.floor(baseAtk * (1 + progressRank * 0.08));
+    const atk = Math.floor(baseAtk * (1 + progressRank * 0.05));
 
     return {
-      name: bossNames[bossIndex],
+      name: bossNames[bossIndex] || `第${player.floor}層の番人`,
       type: "boss",
       image: bossImages[bossIndex] || "",
       hp,
@@ -2730,11 +2734,11 @@ function createEnemy() {
 
   const template = enemyTemplates[rand(0, enemyTemplates.length - 1)];
 
-  const baseHp = template.baseHp + player.floor * 7 + player.defeatedCount * 2;
-  const baseAtk = template.baseAtk + player.floor * 2 + Math.floor(player.defeatedCount / 8);
+  const baseHp = template.baseHp + player.floor * 6 + progressRank * 6;
+  const baseAtk = template.baseAtk + player.floor * 2 + Math.floor(progressRank / 2);
 
   const hp = Math.floor(baseHp * difficultyRate);
-  const atk = Math.floor(baseAtk * (1 + progressRank * 0.06));
+  const atk = Math.floor(baseAtk * (1 + progressRank * 0.04));
 
   return {
     name: template.name,
@@ -2772,8 +2776,7 @@ async function spawnEnemy() {
 ========================================================= */
 
 function getNextQuiz() {
-  const nextNumber = player.totalAnswered + 1;
-  const isChallenge = nextNumber % 10 === 0;
+  const isChallenge = currentEnemy && currentEnemy.boss;
 
   if (isChallenge) {
     if (challengeDeck.length === 0) {
@@ -2809,6 +2812,7 @@ function prepareQuiz(quiz) {
 }
 
 function startQuestion() {
+  document.body.classList.remove("message-active");
   document.body.classList.add("quiz-active");
   
   currentQuiz = prepareQuiz(getNextQuiz());
@@ -2968,6 +2972,13 @@ async function defeatEnemy() {
   sfx("win");
 
   player.defeatedCount++;
+
+  if (currentEnemy.boss) {
+  player.enemiesSinceBoss = 0;
+} else {
+  player.enemiesSinceBoss++;
+}
+  
   player.exp += currentEnemy.exp;
   player.score += currentEnemy.score;
 
