@@ -2370,6 +2370,62 @@ body.title-menu-open .tapStartBtn {
     transform: scaleX(1.02) translateY(-2px) !important;
   }
 }
+
+/* =========================================================
+  メッセージ欄：上寄せ・長文対応・スクロール位置安定
+========================================================= */
+
+#messageBox {
+  display: block !important;
+  height: auto !important;
+  min-height: 104px !important;
+  max-height: 128px !important;
+  padding: 8px 12px 24px 12px !important;
+  font-size: 13px !important;
+  line-height: 1.36 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  white-space: normal !important;
+  text-align: left !important;
+  vertical-align: top !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  overscroll-behavior: contain;
+}
+
+/* メッセージ本文を必ず上から始める */
+#message {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 24px 0 0 !important;
+  line-height: 1.36 !important;
+  white-space: pre-wrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: break-word !important;
+}
+
+/* ▼が本文にかぶりにくいように固定 */
+#nextMark {
+  position: absolute !important;
+  right: 12px !important;
+  bottom: 8px !important;
+  line-height: 1 !important;
+}
+
+/* 低めのスマホでは、少し文字を小さくして収める */
+@media (max-height: 760px) {
+  #messageBox {
+    min-height: 96px !important;
+    max-height: 120px !important;
+    padding: 7px 11px 22px 11px !important;
+    font-size: 12.5px !important;
+    line-height: 1.32 !important;
+  }
+
+  #message {
+    line-height: 1.32 !important;
+  }
+}
   
 </style>
 </head>
@@ -3196,6 +3252,7 @@ function showMessage(text) {
     skipTyping = false;
     message.textContent = "";
     nextMark.classList.add("hidden");
+    messageBox.scrollTop = 0;
 
     for (let i = 0; i < text.length; i++) {
       if (skipTyping) break;
@@ -3209,6 +3266,7 @@ function showMessage(text) {
     }
 
     message.textContent = text;
+    messageBox.scrollTop = 0;
     typing = false;
     nextMark.classList.remove("hidden");
   });
