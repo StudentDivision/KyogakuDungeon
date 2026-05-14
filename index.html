@@ -2878,6 +2878,8 @@ function sfx(type) {
 ========================================================= */
 
 let currentMusic = null;
+let bgmGainNode = null;
+const bgmSourceMap = new WeakMap();
 
 const VOLUME_KEY = "kq_volume_v1";
 const MUTE_KEY = "kq_mute_v1";
@@ -2950,9 +2952,18 @@ function playBattleBgm(restart = false) {
 function setupMusicVolume() {
   getAllMusicTracks().forEach(audio => {
     if (!audio) return;
-    audio.volume = musicVolume;
-    audio.loop = true; // 念のためJS側でもループ指定
+
+    // PC向け。iPhoneでは効かないことがあるが、残しておいてOK
+    audio.volume = 1;
+
+    // ミュートはスマホでも比較的効きやすい
+    audio.muted = musicMuted;
+
+    // 念のためJS側でもループ指定
+    audio.loop = true;
   });
+
+  applyBgmGain();
 }
 
 function applyVolumeUI() {
@@ -2967,28 +2978,67 @@ function updateMasterVolume(value) {
   masterVolume = Number(value);
   localStorage.setItem(VOLUME_KEY, String(masterVolume));
 
+  applyBgmGain();
+  applyVolumeUI();
+}
+
+function ensureBgmGainNode() {
+  initAudio();
+
+  if (!audioCtx || audioCtx.state !== "running") return;
+
+  if (!bgmGainNode) {
+    bgmGainNode = audioCtx.createGain();
+    bgmGainNode.connect(audioCtx.destination);
+  }
+
+  getAllMusicTracks().forEach(audio => {
+    if (!audio) return;
+    if (bgmSourceMap.has(audio)) return;
+
+    try {
+      const source = audioCtx.createMediaElementSource(audio);
+      source.connect(bgmGainNode);
+      bgmSourceMap.set(audio, source);
+    } catch (e) {
+      // 同じaudio要素にMediaElementSourceを二重作成するとエラーになるため無視
+      console.log("BGM接続はすでに設定済みです。");
+    }
+  });
+
+  applyBgmGain();
+}
+
+function applyBgmGain() {
   musicVolume = musicMuted ? 0 : masterVolume / 100 * 0.35;
   sfxVolumeRate = musicMuted ? 0 : masterVolume / 100;
 
-  setupMusicVolume();
-  applyVolumeUI();
+  if (bgmGainNode && audioCtx) {
+    bgmGainNode.gain.setTargetAtTime(
+      musicVolume,
+      audioCtx.currentTime,
+      0.03
+    );
+  }
+
+  getAllMusicTracks().forEach(audio => {
+    if (!audio) return;
+    audio.muted = musicMuted;
+    audio.loop = true;
+  });
 }
 
 function toggleMute() {
   musicMuted = !musicMuted;
   localStorage.setItem(MUTE_KEY, musicMuted ? "1" : "0");
 
-  musicVolume = musicMuted ? 0 : masterVolume / 100 * 0.35;
-  sfxVolumeRate = musicMuted ? 0 : masterVolume / 100;
+  applyBgmGain();
 
-  setupMusicVolume();
-
-  if (musicMuted) {
-    getAllMusicTracks().forEach(audio => {
-      if (!audio) return;
-      audio.volume = 0;
-    });
-  }
+  // スマホでは muted の方が効きやすい
+  getAllMusicTracks().forEach(audio => {
+    if (!audio) return;
+    audio.muted = musicMuted;
+  });
 
   applyVolumeUI();
 }
@@ -3006,10 +3056,18 @@ function stopAllMusic() {
 function playMusic(audio, restart = false) {
   if (!audio) return;
 
+  initAudio();
+
+  if (audioCtx && audioCtx.state === "suspended") {
+    audioCtx.resume().catch(() => {});
+  }
+
+  ensureBgmGainNode();
   setupMusicVolume();
 
   // 同じ曲がすでに再生中なら、そのまま流し続ける
   if (currentMusic === audio && !audio.paused && !restart) {
+    applyBgmGain();
     return;
   }
 
@@ -3026,6 +3084,9 @@ function playMusic(audio, restart = false) {
   if (restart) {
     audio.currentTime = 0;
   }
+
+  audio.muted = musicMuted;
+  applyBgmGain();
 
   audio.play().catch(() => {
     console.log("BGMは最初のタップ後に再生されます。");
@@ -3922,17 +3983,36 @@ tapStartBtn.addEventListener("click", async () => {
   titleMenu.classList.remove("hidden");
 });
 
-  volumeSlider.addEventListener("input", () => {
+  volumeSlider.addEventListener("input", async () => {
+  initAudio();
+
+  if (audioCtx && audioCtx.state === "suspended") {
+    await audioCtx.resume().catch(() => {});
+  }
+
+  ensureBgmGainNode();
   updateMasterVolume(volumeSlider.value);
 });
 
-muteBtn.addEventListener("click", () => {
+muteBtn.addEventListener("click", async () => {
   initAudio();
+
+  if (audioCtx && audioCtx.state === "suspended") {
+    await audioCtx.resume().catch(() => {});
+  }
+
+  ensureBgmGainNode();
   toggleMute();
 
   if (!musicMuted) {
     sfx("select");
-    playTitleBgm();
+
+    // タイトル画面ならタイトルBGMを再開
+    if (!titleScreen.classList.contains("hidden")) {
+      playTitleBgm();
+    } else if (currentMusic) {
+      currentMusic.play().catch(() => {});
+    }
   }
 });
 
