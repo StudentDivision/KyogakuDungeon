@@ -1859,6 +1859,128 @@ body.quiz-active #enemyImage {
 body.title-menu-open .tapStartBtn {
   display: none;
 }
+
+/* =========================================================
+  タイトル画面：若鷲透過PNG用の表示調整
+========================================================= */
+
+.titleEagleWrap {
+  position: relative;
+  width: 138px;
+  height: 118px;
+  margin: 0 auto 8px;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  animation: titleEagleFloat 2.8s ease-in-out infinite;
+}
+
+.titleEagleGlow {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: 118px;
+  height: 76px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.68), rgba(139,233,255,.28) 42%, transparent 72%);
+  filter: blur(6px);
+  opacity: .9;
+  pointer-events: none;
+}
+
+.titleEagleWrap::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: 150px;
+  height: 150px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      from 180deg,
+      transparent,
+      rgba(255,255,255,.18),
+      transparent,
+      rgba(255,230,109,.16),
+      transparent
+    );
+  opacity: .75;
+  filter: blur(.5px);
+  animation: titleEagleHalo 6s linear infinite;
+  pointer-events: none;
+}
+
+.titleEagleImage {
+  position: relative;
+  z-index: 2;
+  width: 132px;
+  height: auto;
+  max-height: 118px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  border-radius: 0;
+  background: transparent;
+  filter:
+    drop-shadow(0 10px 10px rgba(0,0,0,.22))
+    drop-shadow(0 0 14px rgba(255,255,255,.45))
+    saturate(1.08)
+    contrast(1.04);
+}
+
+/* 以前のアイコン用CSSで四角枠っぽくなるのを防ぐ */
+.titleEagleImage {
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* 若鷲をふわっと浮かせる */
+@keyframes titleEagleFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* 背後の光をゆっくり回す */
+@keyframes titleEagleHalo {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* スマホの高さが低い場合は少し小さくする */
+@media (max-height: 760px) {
+  .titleEagleWrap {
+    width: 112px;
+    height: 96px;
+    margin-bottom: 4px;
+  }
+
+  .titleEagleImage {
+    width: 106px;
+    max-height: 94px;
+  }
+
+  .titleEagleGlow {
+    width: 96px;
+    height: 60px;
+  }
+
+  .titleEagleWrap::before {
+    width: 122px;
+    height: 122px;
+  }
+}
   
 </style>
 </head>
@@ -1890,7 +2012,10 @@ body.title-menu-open .tapStartBtn {
 <!-- タイトル画面 -->
 <section id="titleScreen">
   <div class="titleHero">
-   <img class="titleEagleImage" src="assets/icons/icon-192.png" alt="若鷲アイコン">
+  <div class="titleEagleWrap">
+   <div class="titleEagleGlow"></div>
+   <img class="titleEagleImage" src="assets/images/title_eagle.png" alt="若鷲">
+</div>
 
     <div class="gameLogo">
       <div class="logoSmall">若鷲と学びの冒険</div>
