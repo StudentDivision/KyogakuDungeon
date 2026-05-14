@@ -2057,6 +2057,65 @@ body.title-menu-open .tapStartBtn {
     0 7px 0 rgba(0,0,0,.30),
     0 0 28px rgba(255,230,109,.26);
 }
+
+/* =========================================================
+  タイトル画面：音量設定
+========================================================= */
+
+.soundPanel {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 2px solid rgba(255,255,255,.82);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06)),
+    rgba(0, 35, 145, .38);
+  box-shadow:
+    inset 0 0 10px rgba(255,255,255,.12),
+    0 3px 0 rgba(0,0,0,.20);
+}
+
+.soundPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+#volumeSlider {
+  width: 100%;
+  accent-color: #ffe66d;
+}
+
+.miniSoundBtn {
+  min-height: 36px;
+  padding: 5px 8px;
+  font-size: 12px;
+  border-width: 2px;
+}
+
+#enemyArea.boss-scene {
+  animation: bossAura 1.8s ease-in-out infinite;
+}
+
+@keyframes bossAura {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,.10),
+      0 0 18px rgba(255,230,109,.18),
+      0 5px 0 rgba(0,0,0,.24);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,.18),
+      0 0 30px rgba(255,230,109,.34),
+      0 5px 0 rgba(0,0,0,.24);
+  }
+}
   
 </style>
 </head>
@@ -2114,6 +2173,16 @@ body.title-menu-open .tapStartBtn {
   <button id="startBtn" class="primary titleBtn">はじめる</button>
   <button id="continueBtn" class="titleBtn">つづきから</button>
   <button id="historyBtn" class="titleBtn">スコア履歴</button>
+
+  <div class="soundPanel">
+    <div class="soundPanelHeader">
+      <span>音量</span>
+      <span id="volumeText">22%</span>
+    </div>
+    <input id="volumeSlider" type="range" min="0" max="100" value="22">
+    <button id="muteBtn" class="titleBtn miniSoundBtn">音ON</button>
+  </div>
+
   <button id="deleteBtn" class="danger titleBtn">セーブ削除</button>
 </div>
 
@@ -2243,6 +2312,10 @@ const startBtn = $("startBtn");
 const continueBtn = $("continueBtn");
 const historyBtn = $("historyBtn");
 const deleteBtn = $("deleteBtn");
+
+const volumeSlider = $("volumeSlider");
+const volumeText = $("volumeText");
+const muteBtn = $("muteBtn");
 
 const floorText = $("floorText");
 const scoreText = $("scoreText");
@@ -2491,7 +2564,7 @@ function tone(freq, duration = .08, type = "square", volume = .035) {
   osc.type = type;
   osc.frequency.value = freq;
 
-  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+  gain.gain.setValueAtTime(volume * sfxVolumeRate, audioCtx.currentTime);
   gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + duration);
 
   osc.connect(gain);
@@ -2551,7 +2624,16 @@ function sfx(type) {
 ========================================================= */
 
 let currentMusic = null;
-let musicVolume = 0.10;
+
+const VOLUME_KEY = "kq_volume_v1";
+const MUTE_KEY = "kq_mute_v1";
+
+let masterVolume = Number(localStorage.getItem(VOLUME_KEY) || "22");
+let musicMuted = localStorage.getItem(MUTE_KEY) === "1";
+
+// BGMは0〜0.35くらいに抑える。SEはtone側で別途反映。
+let musicVolume = musicMuted ? 0 : masterVolume / 100 * 0.35;
+let sfxVolumeRate = musicMuted ? 0 : masterVolume / 100;
 
 function getBattleBgmList() {
   return [
@@ -2617,6 +2699,44 @@ function setupMusicVolume() {
     audio.volume = musicVolume;
     audio.loop = true; // 念のためJS側でもループ指定
   });
+}
+
+function applyVolumeUI() {
+  if (!volumeSlider || !volumeText || !muteBtn) return;
+
+  volumeSlider.value = masterVolume;
+  volumeText.textContent = musicMuted ? "OFF" : `${masterVolume}%`;
+  muteBtn.textContent = musicMuted ? "音OFF" : "音ON";
+}
+
+function updateMasterVolume(value) {
+  masterVolume = Number(value);
+  localStorage.setItem(VOLUME_KEY, String(masterVolume));
+
+  musicVolume = musicMuted ? 0 : masterVolume / 100 * 0.35;
+  sfxVolumeRate = musicMuted ? 0 : masterVolume / 100;
+
+  setupMusicVolume();
+  applyVolumeUI();
+}
+
+function toggleMute() {
+  musicMuted = !musicMuted;
+  localStorage.setItem(MUTE_KEY, musicMuted ? "1" : "0");
+
+  musicVolume = musicMuted ? 0 : masterVolume / 100 * 0.35;
+  sfxVolumeRate = musicMuted ? 0 : masterVolume / 100;
+
+  setupMusicVolume();
+
+  if (musicMuted) {
+    getAllMusicTracks().forEach(audio => {
+      if (!audio) return;
+      audio.volume = 0;
+    });
+  }
+
+  applyVolumeUI();
 }
 
 function stopAllMusic() {
@@ -3015,20 +3135,40 @@ function createEnemy() {
   };
 }
 
+async function showBossEntrance(enemy) {
+  stopAllMusic();
+
+  playFlash("WARNING", "showWrong");
+  screenShake();
+
+  await showMessage(
+    "空気が ぴんと張りつめた……\n" +
+    "強い迷いの気配が 近づいてくる！"
+  );
+
+  playBossBgm();
+  playFlash("BOSS", "showLevel");
+
+  await wait(500);
+
+  await showMessage(
+    `${enemy.name}が あらわれた！\n` +
+    "ここからは 少し難しい問題です。"
+  );
+}
+
 async function spawnEnemy() {
   currentEnemy = createEnemy();
   renderEnemyVisual(currentEnemy);
 
   updateUI();
 
- if (currentEnemy.boss) {
-  playBossBgm();
-  playFlash("BOSS", "showLevel");
-  await showMessage(`空気が ふるえている……\n${currentEnemy.name}が あらわれた！`);
- } else {
-  playBattleBgm();
-  await showMessage(`${currentEnemy.name}が あらわれた！`);
- }
+  if (currentEnemy.boss) {
+    await showBossEntrance(currentEnemy);
+  } else {
+    playBattleBgm();
+    await showMessage(`${currentEnemy.name}が あらわれた！`);
+  }
 
   startQuestion();
 }
@@ -3470,7 +3610,18 @@ async function startNewGame() {
 
   updateUI();
 
-  await showMessage("希望の勇者よ、出発です。\n教学クイズで 迷いを照らしましょう！");
+  playFlash("冒険開始！", "showLevel");
+
+  await showMessage(
+  "若鷲は 青空へ飛び立った！\n" +
+  "学びの光が、迷いの道を照らしていく……"
+  );
+
+  await showMessage(
+  "100体の迷いを打ち破れば、\n" +
+  "キョウガク・ダンジョンに希望の光が満ちる！"
+  );
+
   await spawnEnemy();
 }
 
@@ -3515,6 +3666,20 @@ tapStartBtn.addEventListener("click", async () => {
 
   document.body.classList.add("title-menu-open");
   titleMenu.classList.remove("hidden");
+});
+
+  volumeSlider.addEventListener("input", () => {
+  updateMasterVolume(volumeSlider.value);
+});
+
+muteBtn.addEventListener("click", () => {
+  initAudio();
+  toggleMute();
+
+  if (!musicMuted) {
+    sfx("select");
+    playTitleBgm();
+  }
 });
 
 startBtn.addEventListener("click", startNewGame);
@@ -3576,6 +3741,7 @@ function boot() {
   player = createNewPlayer();
   resetDecks();
   updateUI();
+  applyVolumeUI();
 
   const high = getHighScore();
   if (high > 0) {
