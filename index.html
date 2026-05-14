@@ -2379,16 +2379,27 @@ const enemyTemplates = [
 const bossNames = [
   "第1層の番人",
   "迷いの門番",
+  "イライラの武人",
   "疑いの守護者",
   "あせりの巨影",
-  "無関心の王",
+  "無関心の竜",
+  "忘却の魔導士",
+  "うぬぼれケルベロス",
+  "くよくよの巨人",
   "迷宮の主"
 ];
 
 const bossImages = [
   "assets/images/boss_01.png",
   "assets/images/boss_02.png",
-  "assets/images/boss_03.png"
+  "assets/images/boss_03.png",
+  "assets/images/boss_04.png",
+  "assets/images/boss_05.png",
+  "assets/images/boss_06.png",
+  "assets/images/boss_07.png",
+  "assets/images/boss_08.png",
+  "assets/images/boss_09.png",
+  "assets/images/boss_10.png"
 ];
 
 /* =========================================================
@@ -2914,6 +2925,7 @@ function createEnemy() {
 
   if (isBoss) {
     const bossIndex = Math.min(player.floor - 1, bossNames.length - 1);
+    const bossImageIndex = (player.floor - 1) % bossImages.length;
 
     const baseHp = 85 + player.floor * 24 + progressRank * 18;
     const baseAtk = 9 + player.floor * 3 + progressRank;
@@ -2922,16 +2934,16 @@ function createEnemy() {
     const atk = Math.floor(baseAtk * (1 + progressRank * 0.05));
 
     return {
-      name: bossNames[bossIndex] || `第${player.floor}層の番人`,
-      type: "boss",
-      image: bossImages[bossIndex] || "",
-      hp,
-      maxHp: hp,
-      attack: atk,
-      exp: 40 + player.floor * 10 + progressRank * 4,
-      score: 800 + player.floor * 150 + progressRank * 80,
-      boss: true
-    };
+    name: bossNames[bossIndex] || `第${player.floor}層の番人`,
+   type: "boss",
+   image: bossImages[bossImageIndex] || "assets/images/boss_01.png",
+   hp,
+   maxHp: hp,
+   attack: atk,
+   exp: 40 + player.floor * 10 + progressRank * 4,
+   score: 800 + player.floor * 150 + progressRank * 80,
+   boss: true
+   };
   }
 
   const template = enemyTemplates[rand(0, enemyTemplates.length - 1)];
