@@ -1872,6 +1872,11 @@ body.title-menu-open .tapStartBtn {
 <audio id="battleBgm3" src="assets/audio/battle_03.mp3" loop preload="auto"></audio>
 <audio id="battleBgm4" src="assets/audio/battle_04.mp3" loop preload="auto"></audio>
 <audio id="battleBgm5" src="assets/audio/battle_05.mp3" loop preload="auto"></audio>
+<audio id="battleBgm6" src="assets/audio/battle_06.mp3" loop preload="auto"></audio>
+<audio id="battleBgm7" src="assets/audio/battle_07.mp3" loop preload="auto"></audio>
+<audio id="battleBgm8" src="assets/audio/battle_08.mp3" loop preload="auto"></audio>
+<audio id="battleBgm9" src="assets/audio/battle_09.mp3" loop preload="auto"></audio>
+<audio id="battleBgm10" src="assets/audio/battle_10.mp3" loop preload="auto"></audio>
 
 <audio id="bossBgm" src="assets/audio/boss.mp3" loop preload="auto"></audio>
 <audio id="clearBgm" src="assets/audio/clear.mp3" loop preload="auto"></audio>
@@ -2082,6 +2087,11 @@ const battleBgm2 = $("battleBgm2");
 const battleBgm3 = $("battleBgm3");
 const battleBgm4 = $("battleBgm4");
 const battleBgm5 = $("battleBgm5");
+const battleBgm6 = $("battleBgm6");
+const battleBgm7 = $("battleBgm7");
+const battleBgm8 = $("battleBgm8");
+const battleBgm9 = $("battleBgm9");
+const battleBgm10 = $("battleBgm10");
 const bossBgm = $("bossBgm");
 const clearBgm = $("clearBgm");
 
@@ -2226,6 +2236,8 @@ function createNewPlayer() {
     defeatedCount: 0,
     floor: 1,
 
+    battleBgmIndex: -1,
+
     seenQuestions: [],
     seenChallenges: []
   };
@@ -2315,17 +2327,62 @@ function sfx(type) {
 let currentMusic = null;
 let musicVolume = 0.22;
 
-function getAllMusicTracks() {
+function getBattleBgmList() {
   return [
-    titleBgm,
     battleBgm1,
     battleBgm2,
     battleBgm3,
     battleBgm4,
     battleBgm5,
+    battleBgm6,
+    battleBgm7,
+    battleBgm8,
+    battleBgm9,
+    battleBgm10
+  ];
+}
+
+function getAllMusicTracks() {
+  return [
+    titleBgm,
+    ...getBattleBgmList(),
     bossBgm,
     clearBgm
   ];
+}
+
+function pickRandomBattleBgmIndex() {
+  const list = getBattleBgmList();
+
+  if (list.length <= 1) return 0;
+
+  let nextIndex = Math.floor(Math.random() * list.length);
+
+  // 同じ曲が連続しないようにする
+  while (nextIndex === player.battleBgmIndex) {
+    nextIndex = Math.floor(Math.random() * list.length);
+  }
+
+  return nextIndex;
+}
+
+function getCurrentBattleBgm() {
+  const list = getBattleBgmList();
+
+  if (player.battleBgmIndex === undefined || player.battleBgmIndex < 0) {
+    player.battleBgmIndex = pickRandomBattleBgmIndex();
+  }
+
+  return list[player.battleBgmIndex] || list[0];
+}
+
+function changeBattleBgmRandomly() {
+  player.battleBgmIndex = pickRandomBattleBgmIndex();
+  playBattleBgm(true);
+}
+
+function playBattleBgm(restart = false) {
+  playMusic(getCurrentBattleBgm(), restart);
 }
 
 function setupMusicVolume() {
@@ -2375,25 +2432,8 @@ function playMusic(audio, restart = false) {
   });
 }
 
-function getBattleBgmByFloor() {
-  const battleList = [
-    battleBgm1,
-    battleBgm2,
-    battleBgm3,
-    battleBgm4,
-    battleBgm5
-  ];
-
-  const index = (player.floor - 1) % battleList.length;
-  return battleList[index];
-}
-
 function playTitleBgm() {
   playMusic(titleBgm);
-}
-
-function playBattleBgm() {
-  playMusic(getBattleBgmByFloor());
 }
 
 function playBossBgm() {
@@ -2943,7 +2983,7 @@ async function defeatEnemy() {
     updateFloorBackground();
     updateEnemyBackground();
 
-    playBattleBgm();
+    changeBattleBgmRandomly();
     
     await showMessage(`フロアボスを たおした！\n第${player.floor}層へ すすみます。`);
   }
@@ -3141,7 +3181,9 @@ async function startNewGame() {
   sfx("select");
 
   player = createNewPlayer();
-  playBattleBgm();
+  player.battleBgmIndex = pickRandomBattleBgmIndex();
+  playBattleBgm(true);
+  
   resetDecks();
 
   titleScreen.classList.add("hidden");
@@ -3161,6 +3203,10 @@ async function continueGame() {
   if (!loadGame()) {
     alert("セーブデータがありません。");
     return;
+  }
+
+  if (player.battleBgmIndex === undefined) {
+  player.battleBgmIndex = pickRandomBattleBgmIndex();
   }
 
   playBattleBgm();
