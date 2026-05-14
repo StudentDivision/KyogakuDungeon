@@ -2426,6 +2426,110 @@ body.title-menu-open .tapStartBtn {
     line-height: 1.32 !important;
   }
 }
+
+/* =========================================================
+  メッセージ欄：上余白を少しだけ追加
+========================================================= */
+
+#messageBox {
+  padding-top: 12px !important;
+}
+
+#message {
+  padding-top: 3px !important;
+}
+
+/* =========================================================
+  タイトルロゴ最終調整：小さめ2段＋キャッチコピー表示
+========================================================= */
+
+.titleHero {
+  padding: 16px 12px 18px !important;
+}
+
+/* ロゴ全体を少しコンパクトに */
+.titleHero .titleMain {
+  width: min(100%, 300px) !important;
+  margin: 4px auto 8px !important;
+  display: grid !important;
+  grid-template-rows: auto auto !important;
+  justify-items: center !important;
+  align-items: center !important;
+  gap: 0 !important;
+  line-height: 0.82 !important;
+  text-align: center !important;
+  transform: none !important;
+}
+
+/* 上下共通：控えめサイズ */
+.titleHero .titleTop,
+.titleHero .titleBottom {
+  display: block !important;
+  width: 100% !important;
+  font-weight: 900 !important;
+  font-size: clamp(30px, 7.4vw, 44px) !important;
+  line-height: 0.94 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  transform-origin: center center !important;
+}
+
+/* 上段：キョウガク */
+.titleHero .titleTop {
+  color: #ffe66d !important;
+  transform: scaleX(0.98) translateY(0) !important;
+  text-shadow:
+    0 2px 0 #fff3b0,
+    2px 2px 0 #5a78d6,
+    4px 4px 0 #3450a8,
+    0 0 12px rgba(255, 240, 150, 0.22) !important;
+}
+
+/* 下段：ダンジョン */
+.titleHero .titleBottom {
+  color: #f7faff !important;
+  transform: scaleX(1.02) translateY(-2px) !important;
+  -webkit-text-stroke: 1px rgba(0, 45, 150, 0.72);
+  text-shadow:
+    0 2px 0 #d7e6ff,
+    2px 2px 0 #4f85df,
+    4px 4px 0 #2d5fb7,
+    0 0 12px rgba(255,255,255,0.18) !important;
+}
+
+/* キャッチコピーを確実に見せる */
+.titleHero .titleCatch {
+  display: block !important;
+  margin: 8px auto 0 !important;
+  font-size: clamp(12px, 3.2vw, 14px) !important;
+  line-height: 1.45 !important;
+  color: #ffffff !important;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.60) !important;
+}
+
+/* 高さが狭いスマホではさらに圧縮 */
+@media (max-height: 760px) {
+  .titleHero {
+    padding: 12px 10px 14px !important;
+  }
+
+  .titleHero .titleMain {
+    width: min(100%, 280px) !important;
+    margin: 3px auto 6px !important;
+    line-height: 0.8 !important;
+  }
+
+  .titleHero .titleTop,
+  .titleHero .titleBottom {
+    font-size: clamp(28px, 7vw, 40px) !important;
+  }
+
+  .titleHero .titleCatch {
+    font-size: 12px !important;
+    margin-top: 6px !important;
+  }
+}
   
 </style>
 </head>
