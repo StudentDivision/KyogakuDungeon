@@ -2461,7 +2461,7 @@ function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 
-function tone(freq, duration = .08, type = "square", volume = .06) {
+function tone(freq, duration = .08, type = "square", volume = .025) {
   if (!audioCtx) return;
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
@@ -2527,7 +2527,7 @@ function sfx(type) {
 ========================================================= */
 
 let currentMusic = null;
-let musicVolume = 0.22;
+let musicVolume = 0.12;
 
 function getBattleBgmList() {
   return [
@@ -2905,7 +2905,8 @@ function saveHistory() {
 ========================================================= */
 
 function createEnemy() {
-  const isBoss = player.enemiesSinceBoss >= 10;
+  const nextEnemyNumber = player.defeatedCount + 1;
+  const isBoss = nextEnemyNumber % 10 === 0;
 
   const progressRank = Math.floor(player.defeatedCount / 10);
   const correctRank = Math.floor(player.correctCount / 20);
@@ -3166,12 +3167,6 @@ async function defeatEnemy() {
   sfx("win");
 
   player.defeatedCount++;
-
-  if (currentEnemy.boss) {
-  player.enemiesSinceBoss = 0;
-} else {
-  player.enemiesSinceBoss++;
-}
   
   player.exp += currentEnemy.exp;
   player.score += currentEnemy.score;
