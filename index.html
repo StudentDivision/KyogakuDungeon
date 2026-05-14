@@ -1972,8 +1972,12 @@ body.title-menu-open .tapStartBtn {
   }
 
   .titleEagleGlow {
-    width: 96px;
-    height: 60px;
+  width: 150px;
+  height: 95px;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.82), rgba(139,233,255,.38) 42%, transparent 72%);
+  filter: blur(8px);
+  opacity: 1;
   }
 
   .titleEagleWrap::before {
@@ -2076,6 +2080,46 @@ body.title-menu-open .tapStartBtn {
   0% { transform: translateX(-50%) translateY(0); }
   100% { transform: translateX(-47%) translateY(-4px); }
 }
+
+/* =========================================================
+  タイトル画面：追加ブラッシュアップ
+========================================================= */
+
+/* 若鷲の背後の光を少し強める */
+.titleEagleGlow {
+  width: 150px;
+  height: 95px;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.82), rgba(139,233,255,.38) 42%, transparent 72%);
+  filter: blur(8px);
+  opacity: 1;
+}
+
+/* 若鷲を少し大きくする */
+.titleEagleWrap {
+  width: 160px;
+  height: 132px;
+}
+
+.titleEagleImage {
+  width: 154px;
+  max-height: 132px;
+}
+
+/* タイトルロゴの上下間隔を少し詰める */
+.titleMain {
+  gap: 0;
+  line-height: .94;
+}
+
+/* TAP STARTを少し光沢強めにする */
+.tapStartBtn {
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.52),
+    inset 0 -12px 18px rgba(0,0,0,.22),
+    0 7px 0 rgba(0,0,0,.30),
+    0 0 28px rgba(255,230,109,.26);
+}
   
 </style>
 </head>
@@ -2156,7 +2200,7 @@ body.title-menu-open .tapStartBtn {
     <div class="statLine"><span>EXP</span><span id="expText">0/20</span></div>
 
     <div class="statLine"><span>HP</span><span id="hpText">30/30</span></div>
-    <div class="statLine"><span>撃破</span><span id="defeatedText">0</span></div>
+    <div class="statLine"><span>回答</span><span id="defeatedText">0問</span></div>
     <div class="barOuter"><div id="hpBar" class="barInner"></div></div>
 
     <div class="statLine"><span>EXP</span><span id="expMiniText">0%</span></div>
@@ -2323,7 +2367,7 @@ const SAVE_KEY = "kibou_quiz_battle_save_v2";
 const HISTORY_KEY = "kibou_quiz_battle_history_v2";
 const HIGH_SCORE_KEY = "kibou_quiz_battle_high_score_v2";
 
-const CLEAR_CORRECT_COUNT = 100;
+const CLEAR_DEFEAT_COUNT = 100;
 
 /* =========================================================
   プレイヤーデータ
@@ -2766,14 +2810,14 @@ messageBox.addEventListener("click", () => {
 function updateUI() {
   updateFloorBackground();
   updateEnemyBackground();
-  floorText.textContent = ` 第${player.floor}層 ${player.correctCount}/${CLEAR_CORRECT_COUNT}`;
+  floorText.textContent = ` 第${player.floor}層 撃破${player.defeatedCount}/${CLEAR_DEFEAT_COUNT}`;
   scoreText.textContent = `${player.score}点`;
 
   levelText.textContent = player.level;
   expText.textContent = `${player.exp}/${player.nextExp}`;
   expMiniText.textContent = `${Math.min(100, Math.round(player.exp / player.nextExp * 100))}%`;
   hpText.textContent = `${player.hp}/${player.maxHp}`;
-  defeatedText.textContent = player.defeatedCount;
+  defeatedText.textContent = `${player.totalAnswered}問`;
   comboText.textContent = player.combo;
   bestComboText.textContent = player.bestCombo;
 
@@ -3113,13 +3157,6 @@ async function handleCorrect() {
   player.combo++;
   player.bestCombo = Math.max(player.bestCombo, player.combo);
 
-  if (player.correctCount >= CLEAR_CORRECT_COUNT) {
-  updateUI();
-  saveGame();
-  await gameClear();
-  return;
-}
-
   const expGain = currentQuiz.challenge ? 12 : 4;
   player.exp += expGain;
 
@@ -3209,20 +3246,26 @@ async function defeatEnemy() {
   await checkLevelUp();
   await handleDrop(currentEnemy.boss);
 
-  if (currentEnemy.boss) {
-    player.floor++;
-    updateFloorBackground();
-    updateEnemyBackground();
+if (currentEnemy.boss) {
+  player.floor++;
+  updateFloorBackground();
+  updateEnemyBackground();
 
-    changeBattleBgmRandomly();
-    
-    await showMessage(`フロアボスを たおした！\n第${player.floor}層へ すすみます。`);
-  }
+  changeBattleBgmRandomly();
+  
+  await showMessage(`フロアボスを たおした！\n第${player.floor}層へ すすみます。`);
+}
 
+if (player.defeatedCount >= CLEAR_DEFEAT_COUNT) {
   updateUI();
   saveGame();
-  await spawnEnemy();
+  await gameClear();
+  return;
 }
+
+updateUI();
+saveGame();
+await spawnEnemy();
 
 /* =========================================================
   ドロップ処理
@@ -3319,12 +3362,12 @@ async function gameClear() {
   const highUpdated = saveHistory();
   deleteSave();
 
-  await showMessage("まばゆい光が あたりを包んだ……\nあなたの学びの旅は、大きな実りをむかえました！");
+  await showMessage("まばゆい光が あたりを包んだ……\n100体の迷いを打ち破り、学びの旅は大きな実りをむかえました！");
 
   resultTitle.textContent = "CLEAR!";
   resultBody.innerHTML = `
     <span class="gold">クリアおめでとう！</span><br>
-    100問正解を達成しました！<br><br>
+    100の魔の撃破を達成しました！<br><br>
     最終スコア：<span class="gold">${player.score}</span><br>
     ${highUpdated ? '<span class="gold">ハイスコア更新！</span><br>' : ''}
     最高スコア：${getHighScore()}<br>
