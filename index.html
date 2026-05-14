@@ -2258,6 +2258,118 @@ body.title-menu-open .tapStartBtn {
     transform: scaleX(1.04) translateY(-4px) !important;
   }
 }
+
+/* =========================================================
+  タイトルロゴ最終版：下城さん用ベストバランス
+  キョウガク / ダンジョンを小さめ・中央揃えで整える
+========================================================= */
+
+.titleHero .gameLogo {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+}
+
+/* ロゴ全体 */
+.titleHero .titleMain {
+  width: min(100%, 330px) !important;
+  margin: 6px auto 12px !important;
+  display: grid !important;
+  grid-template-rows: auto auto !important;
+  justify-items: center !important;
+  align-items: center !important;
+  gap: 0 !important;
+  line-height: 0.84 !important;
+  text-align: center !important;
+  transform: none !important;
+}
+
+/* 上下共通：まず同じ基準サイズにそろえる */
+.titleHero .titleTop,
+.titleHero .titleBottom {
+  display: block !important;
+  width: 100% !important;
+  font-weight: 900 !important;
+  font-size: clamp(36px, 8.4vw, 52px) !important;
+  line-height: 0.92 !important;
+  letter-spacing: 0.015em !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  transform-origin: center center !important;
+}
+
+/* 上段：キョウガク */
+.titleHero .titleTop {
+  color: #ffe66d !important;
+  transform: scaleX(0.96) translateY(0px) !important;
+  text-shadow:
+    0 2px 0 #fff3b0,
+    2px 2px 0 #5a78d6,
+    4px 4px 0 #3450a8,
+    0 0 14px rgba(255, 240, 150, 0.24) !important;
+}
+
+/* 下段：ダンジョン */
+.titleHero .titleBottom {
+  color: #f7faff !important;
+  transform: scaleX(1.02) translateY(-3px) !important;
+  -webkit-text-stroke: 1px rgba(0, 45, 150, 0.72);
+  text-shadow:
+    0 2px 0 #d7e6ff,
+    2px 2px 0 #4f85df,
+    4px 4px 0 #2d5fb7,
+    0 0 14px rgba(255,255,255,0.18) !important;
+}
+
+/* キャッチコピーとの距離 */
+.titleHero .titleCatch {
+  margin-top: 6px !important;
+}
+
+/* ロゴの上の小見出しとの距離 */
+.titleHero .logoSmall {
+  margin-bottom: 7px !important;
+}
+
+/* スマホ幅では少しだけ小さくして安全に収める */
+@media (max-width: 480px) {
+  .titleHero .titleMain {
+    width: min(100%, 305px) !important;
+    margin: 5px auto 10px !important;
+    line-height: 0.82 !important;
+  }
+
+  .titleHero .titleTop,
+  .titleHero .titleBottom {
+    font-size: clamp(32px, 8.2vw, 47px) !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  .titleHero .titleTop {
+    transform: scaleX(0.96) translateY(0px) !important;
+  }
+
+  .titleHero .titleBottom {
+    transform: scaleX(1.02) translateY(-3px) !important;
+  }
+}
+
+/* 画面の高さが低いスマホではさらに少しだけ圧縮 */
+@media (max-height: 760px) {
+  .titleHero .titleMain {
+    width: min(100%, 292px) !important;
+    margin: 3px auto 8px !important;
+  }
+
+  .titleHero .titleTop,
+  .titleHero .titleBottom {
+    font-size: clamp(30px, 7.8vw, 44px) !important;
+  }
+
+  .titleHero .titleBottom {
+    transform: scaleX(1.02) translateY(-2px) !important;
+  }
+}
   
 </style>
 </head>
