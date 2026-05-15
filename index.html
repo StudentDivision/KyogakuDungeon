@@ -2530,6 +2530,55 @@ body.title-menu-open .titleHero .titleBottom {
     transform: scale(1.04);
   }
 }
+
+/* =========================================================
+  クリア後バッジ・称号表示
+========================================================= */
+
+.clearBadge {
+  display: inline-block;
+  margin: 0 auto 6px;
+  padding: 4px 14px;
+  border: 2px solid rgba(255,255,255,.95);
+  border-radius: 999px;
+  color: #fff7b8;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.08)),
+    linear-gradient(180deg, #f3b83d, #9b5d05);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-shadow:
+    0 1px 0 rgba(80,40,0,.9),
+    0 0 10px rgba(255,230,109,.75);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.5),
+    0 3px 0 rgba(0,0,0,.28),
+    0 0 16px rgba(255,230,109,.35);
+  animation: clearBadgeGlow 1.8s ease-in-out infinite;
+}
+
+@keyframes clearBadgeGlow {
+  0%, 100% {
+    filter: brightness(1);
+    transform: translateY(0);
+  }
+  50% {
+    filter: brightness(1.18);
+    transform: translateY(-1px);
+  }
+}
+
+.titleReward {
+  display: inline-block;
+  margin: 4px 0;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255,230,109,.16);
+  border: 1px solid rgba(255,230,109,.75);
+  color: #ffe66d;
+  font-weight: 900;
+}
   
 </style>
 </head>
@@ -2568,13 +2617,15 @@ body.title-menu-open .titleHero .titleBottom {
    <img class="titleEagleImage" src="assets/images/title_eagle.png" alt="若鷲">
 </div>
 
-    <div class="gameLogo">
-      <div class="logoSmall">若鷲と学びの冒険</div>
-      <div class="titleMain">
-       <span class="titleTop">キョウガク</span>
-       <span class="titleBottom">ダンジョン</span>
-      </div>
-    </div>
+<div class="gameLogo">
+  <div id="clearBadge" class="clearBadge hidden">CLEAR</div>
+
+  <div class="logoSmall">若鷲と学びの冒険</div>
+  <div class="titleMain">
+   <span class="titleTop">キョウガク</span>
+   <span class="titleBottom">ダンジョン</span>
+  </div>
+</div>
 
     <div class="titleCatch">
       教学は、人生、生き方の軌道をつくる。
@@ -2589,6 +2640,7 @@ body.title-menu-open .titleHero .titleBottom {
 <button id="endlessBtn" class="titleBtn">エンドレス</button>
 <button id="endlessContinueBtn" class="titleBtn">つづきから(エンドレス)</button>
 <button id="historyBtn" class="titleBtn">スコア履歴</button>
+<button id="achievementBtn" class="titleBtn">称号・記録</button>
 
   <div class="soundPanel">
     <div class="soundPanelHeader">
@@ -2730,6 +2782,8 @@ const endlessBtn = $("endlessBtn");
 const endlessContinueBtn = $("endlessContinueBtn");
 const historyBtn = $("historyBtn");
 const deleteBtn = $("deleteBtn");
+const achievementBtn = $("achievementBtn");
+const clearBadge = $("clearBadge");
 
 const volumeSlider = $("volumeSlider");
 const volumeText = $("volumeText");
@@ -2800,6 +2854,9 @@ const NORMAL_SAVE_KEY = "kibou_quiz_battle_normal_save_v1";
 const ENDLESS_SAVE_KEY = "kibou_quiz_battle_endless_save_v1";
 const HISTORY_KEY = "kibou_quiz_battle_history_v2";
 const HIGH_SCORE_KEY = "kibou_quiz_battle_high_score_v2";
+const TITLE_KEY = "kibou_quiz_battle_titles_v1";
+const ENDLESS_BEST_KEY = "kibou_quiz_battle_endless_best_v1";
+const CLEAR_FLAG_KEY = "kibou_quiz_battle_clear_flag_v1";
 
 const CLEAR_DEFEAT_COUNT = 100;
 
@@ -3605,6 +3662,215 @@ function saveHistory() {
 }
 
 /* =========================================================
+  称号・ランク・エンドレス自己ベスト
+========================================================= */
+
+const titleMasterList = [
+  {
+    id: "first_win",
+    name: "希望の一歩",
+    condition: p => p.defeatedCount >= 1,
+    desc: "はじめて敵を1体撃破した"
+  },
+  {
+    id: "young_eagle",
+    name: "学びの若鷲",
+    condition: p => p.defeatedCount >= 10,
+    desc: "10体撃破した"
+  },
+  {
+    id: "clear_100",
+    name: "迷いを越えし者",
+    condition: p => p.defeatedCount >= 100,
+    desc: "通常モードをクリアした"
+  },
+  {
+    id: "no_miss_clear",
+    name: "無敗の求道者",
+    condition: p => p.mode !== "endless" && p.defeatedCount >= 100 && p.wrongCount === 0,
+    desc: "通常モードをノーミスでクリアした"
+  },
+  {
+    id: "high_accuracy",
+    name: "教学の光を継ぐ者",
+    condition: p => getAccuracy(p) >= 90 && p.totalAnswered >= 30,
+    desc: "正答率90%以上を達成した"
+  },
+  {
+    id: "combo_20",
+    name: "集中の達人",
+    condition: p => p.bestCombo >= 20,
+    desc: "最高コンボ20以上を達成した"
+  },
+  {
+    id: "endless_30",
+    name: "不屈の挑戦者",
+    condition: p => p.mode === "endless" && p.defeatedCount >= 30,
+    desc: "エンドレスで30体撃破した"
+  },
+  {
+    id: "endless_50",
+    name: "限界突破の勇者",
+    condition: p => p.mode === "endless" && p.defeatedCount >= 50,
+    desc: "エンドレスで50体撃破した"
+  },
+  {
+    id: "endless_100",
+    name: "誓願の大勇者",
+    condition: p => p.mode === "endless" && p.defeatedCount >= 100,
+    desc: "エンドレスで100体撃破した"
+  },
+  {
+    id: "level_20",
+    name: "成長の証人",
+    condition: p => p.level >= 20,
+    desc: "レベル20に到達した"
+  }
+];
+
+function getAccuracy(p = player) {
+  return p.totalAnswered
+    ? Math.round(p.correctCount / p.totalAnswered * 100)
+    : 0;
+}
+
+function getOwnedTitles() {
+  try {
+    return JSON.parse(localStorage.getItem(TITLE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveOwnedTitles(ids) {
+  localStorage.setItem(TITLE_KEY, JSON.stringify([...new Set(ids)]));
+}
+
+function unlockTitlesByPlayer(p = player) {
+  const owned = getOwnedTitles();
+  const newTitles = [];
+
+  titleMasterList.forEach(title => {
+    if (!owned.includes(title.id) && title.condition(p)) {
+      owned.push(title.id);
+      newTitles.push(title);
+    }
+  });
+
+  saveOwnedTitles(owned);
+  return newTitles;
+}
+
+function getTitlesText(ids = getOwnedTitles()) {
+  if (!ids.length) return "まだ称号はありません。";
+
+  return ids.map(id => {
+    const title = titleMasterList.find(t => t.id === id);
+    return title ? `・${title.name}` : "";
+  }).filter(Boolean).join("<br>");
+}
+
+function getRank(p = player) {
+  const accuracy = getAccuracy(p);
+  let points = 0;
+
+  points += Math.min(40, Math.floor(accuracy / 2.5));
+  points += Math.min(25, Math.floor(p.bestCombo * 1.2));
+  points += Math.min(25, Math.floor(p.defeatedCount / 4));
+  points += Math.min(10, Math.floor(p.level / 3));
+
+  if (p.mode !== "endless" && p.defeatedCount >= 100) points += 10;
+  if (p.mode === "endless" && p.defeatedCount >= 50) points += 10;
+
+  if (points >= 95) {
+    return { rank: "S+", label: "誓願の大勇者", comment: "すばらしい集中力です。求道の光がまぶしく輝いています！" };
+  }
+  if (points >= 85) {
+    return { rank: "S", label: "教学の光を継ぐ者", comment: "圧巻の成績です。知識と勇気がしっかり結びついています！" };
+  }
+  if (points >= 72) {
+    return { rank: "A", label: "学びの若鷲", comment: "とても良い冒険でした。さらに高い空へ羽ばたけそうです！" };
+  }
+  if (points >= 55) {
+    return { rank: "B", label: "希望の冒険者", comment: "しっかり前進できています。次はもっと遠くまで進めます！" };
+  }
+  if (points >= 35) {
+    return { rank: "C", label: "これからの挑戦者", comment: "大丈夫。ここから学びの力はどんどん伸びていきます！" };
+  }
+
+  return { rank: "D", label: "はじめの一歩", comment: "最初の一歩が大切です。また一緒に挑戦しましょう！" };
+}
+
+function getEndlessBest() {
+  try {
+    return JSON.parse(localStorage.getItem(ENDLESS_BEST_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function updateEndlessBest(p = player) {
+  if (p.mode !== "endless") return false;
+
+  const best = getEndlessBest();
+  let updated = false;
+
+  if (!best.defeated || p.defeatedCount > best.defeated) {
+    best.defeated = p.defeatedCount;
+    updated = true;
+  }
+
+  if (!best.score || p.score > best.score) {
+    best.score = p.score;
+    updated = true;
+  }
+
+  if (!best.floor || p.floor > best.floor) {
+    best.floor = p.floor;
+    updated = true;
+  }
+
+  if (!best.combo || p.bestCombo > best.combo) {
+    best.combo = p.bestCombo;
+    updated = true;
+  }
+
+  if (updated) {
+    best.date = nowText();
+    localStorage.setItem(ENDLESS_BEST_KEY, JSON.stringify(best));
+  }
+
+  return updated;
+}
+
+function setClearFlag() {
+  localStorage.setItem(CLEAR_FLAG_KEY, "1");
+}
+
+function hasClearFlag() {
+  return localStorage.getItem(CLEAR_FLAG_KEY) === "1";
+}
+
+function updateClearBadge() {
+  if (!clearBadge) return;
+
+  if (hasClearFlag()) {
+    clearBadge.classList.remove("hidden");
+  } else {
+    clearBadge.classList.add("hidden");
+  }
+}
+
+function formatNewTitles(newTitles) {
+  if (!newTitles.length) return "";
+
+  return `
+    <br><span class="gold">新しい称号を獲得！</span><br>
+    ${newTitles.map(t => `<span class="titleReward">${t.name}</span>`).join("<br>")}
+  `;
+}
+
+/* =========================================================
   敵生成・ボス生成処理
 ========================================================= */
 
@@ -4056,7 +4322,13 @@ async function gameClear() {
     : 0;
 
   const highUpdated = saveHistory();
-  deleteSave();
+  setClearFlag();
+
+  const rank = getRank(player);
+  const newTitles = unlockTitlesByPlayer(player);
+
+  deleteSave("normal");
+  updateClearBadge();
 
   await showMessage("まばゆい光が あたりを包んだ……\n100体の迷いを打ち破り、学びの旅は大きな実りをむかえました！");
 
@@ -4064,6 +4336,11 @@ async function gameClear() {
   resultBody.innerHTML = `
     <span class="gold">クリアおめでとう！</span><br>
     100の魔の撃破を達成しました！<br><br>
+
+    評価ランク：<span class="gold">${rank.rank}</span><br>
+    称号：<span class="gold">${rank.label}</span><br>
+    ${rank.comment}<br><br>
+
     最終スコア：<span class="gold">${player.score}</span><br>
     ${highUpdated ? '<span class="gold">ハイスコア更新！</span><br>' : ''}
     最高スコア：${getHighScore()}<br>
@@ -4074,7 +4351,8 @@ async function gameClear() {
     最高コンボ：${player.bestCombo}<br><br>
     学びの光は、迷いを照らす力になりました。<br>
     また新たな冒険へ出発しましょう！
-  `;
+    ${formatNewTitles(newTitles)}
+    `;
 
   historyList.classList.add("hidden");
   closeOverlayBtn.textContent = "タイトルへ";
@@ -4095,12 +4373,23 @@ async function gameOver() {
   player.score += Math.max(0, player.hp) * 5;
 
   const highUpdated = saveHistory();
-  deleteSave();
+  const rank = getRank(player);
+  const newTitles = unlockTitlesByPlayer(player);
+  const endlessBestUpdated = updateEndlessBest(player);
+
+  deleteSave(player.mode);
 
   resultTitle.textContent = "GAME OVER";
   resultBody.innerHTML = `
-    ${highUpdated ? '<span class="gold">ハイスコア更新！</span><br>' : ''}
-    モード：${player.mode === "endless" ? "エンドレス" : "通常"}<br>
+  ${highUpdated ? '<span class="gold">ハイスコア更新！</span><br>' : ''}
+  ${endlessBestUpdated ? '<span class="gold">エンドレス自己ベスト更新！</span><br>' : ''}
+
+    モード：${player.mode === "endless" ? "エンドレス" : "通常"}<br><br>
+
+    評価ランク：<span class="gold">${rank.rank}</span><br>
+    称号：<span class="gold">${rank.label}</span><br>
+    ${rank.comment}<br><br>
+
     今回のスコア：<span class="gold">${player.score}</span><br>
     最高スコア：${getHighScore()}<br>
     到達レベル：${player.level}<br>
@@ -4109,7 +4398,8 @@ async function gameOver() {
     正答率：${accuracy}%<br>
     最高コンボ：${player.bestCombo}<br><br>
     ${getEvaluation(accuracy)}
-  `;
+    ${formatNewTitles(newTitles)}
+    `;
 
   historyList.classList.add("hidden");
   closeOverlayBtn.textContent = "タイトルへ";
@@ -4138,6 +4428,50 @@ function showHistory() {
       </div>
     `).join("")
     : "";
+
+  closeOverlayBtn.textContent = "閉じる";
+  resultOverlay.classList.remove("hidden");
+}
+
+function showAchievements() {
+  initAudio();
+  sfx("select");
+
+  const owned = getOwnedTitles();
+  const best = getEndlessBest();
+
+  resultTitle.textContent = "称号・記録";
+
+  resultBody.innerHTML = `
+    <span class="gold">獲得称号</span><br>
+    ${getTitlesText(owned)}<br><br>
+
+    <span class="gold">エンドレス自己ベスト</span><br>
+    撃破数：${best.defeated || 0}<br>
+    最高スコア：${best.score || 0}<br>
+    最高到達階：${best.floor || 0}<br>
+    最高コンボ：${best.combo || 0}<br>
+    ${best.date ? `更新日：${best.date}<br>` : ""}
+    <br>
+    <span class="gold">通常クリア</span><br>
+    ${hasClearFlag() ? "達成済み" : "未達成"}
+  `;
+
+  historyList.classList.remove("hidden");
+  historyList.innerHTML = `
+    <div class="window" style="text-align:left; font-size:13px; line-height:1.65;">
+      ${titleMasterList.map(t => {
+        const got = owned.includes(t.id);
+        return `
+          <div style="margin-bottom:8px;">
+            ${got ? "🏅" : "□"} 
+            <span class="${got ? "gold" : ""}">${t.name}</span><br>
+            <span style="font-size:12px;">${t.desc}</span>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
 
   closeOverlayBtn.textContent = "閉じる";
   resultOverlay.classList.remove("hidden");
@@ -4347,34 +4681,62 @@ continueBtn.addEventListener("click", continueGame);
 historyBtn.addEventListener("click", showHistory);
 endlessBtn.addEventListener("click", startEndlessGame);
 endlessContinueBtn.addEventListener("click", continueEndlessGame);
+achievementBtn.addEventListener("click", showAchievements);
 
 deleteBtn.addEventListener("click", () => {
   initAudio();
   sfx("select");
 
   const target = prompt(
-    "削除するセーブを選んでください。\n" +
-    "1：通常モード\n" +
-    "2：エンドレスモード\n" +
-    "3：両方\n\n" +
+    "削除するデータを選んでください。\n" +
+    "1：通常モードの続きからデータ\n" +
+    "2：エンドレスモードの続きからデータ\n" +
+    "3：通常・エンドレス両方の続きからデータ\n" +
+    "4：称号・CLEARバッジ・エンドレス自己ベストも含めて全削除\n\n" +
     "数字を入力してください。"
   );
 
   if (target === "1") {
     localStorage.removeItem(NORMAL_SAVE_KEY);
-    alert("通常モードのセーブデータを削除しました。");
+    alert("通常モードの続きからデータを削除しました。");
+
   } else if (target === "2") {
     localStorage.removeItem(ENDLESS_SAVE_KEY);
-    alert("エンドレスモードのセーブデータを削除しました。");
+    alert("エンドレスモードの続きからデータを削除しました。");
+
   } else if (target === "3") {
     localStorage.removeItem(NORMAL_SAVE_KEY);
     localStorage.removeItem(ENDLESS_SAVE_KEY);
-    alert("通常・エンドレス両方のセーブデータを削除しました。");
+    alert("通常・エンドレス両方の続きからデータを削除しました。");
+
+  } else if (target === "4") {
+    const ok = confirm(
+      "本当にすべての記録を削除しますか？\n\n" +
+      "削除されるもの：\n" +
+      "・通常モードの続きからデータ\n" +
+      "・エンドレスモードの続きからデータ\n" +
+      "・獲得称号\n" +
+      "・CLEARバッジ\n" +
+      "・エンドレス自己ベスト\n\n" +
+      "スコア履歴と最高スコアは残します。"
+    );
+
+    if (!ok) return;
+
+    localStorage.removeItem(NORMAL_SAVE_KEY);
+    localStorage.removeItem(ENDLESS_SAVE_KEY);
+    localStorage.removeItem(TITLE_KEY);
+    localStorage.removeItem(ENDLESS_BEST_KEY);
+    localStorage.removeItem(CLEAR_FLAG_KEY);
+
+    alert("称号・CLEARバッジ・自己ベストを含む記録を削除しました。");
+
   } else {
     return;
   }
 
   updateUI();
+  updateClearBadge();
 });
 
 closeOverlayBtn.addEventListener("click", () => {
@@ -4421,6 +4783,7 @@ function boot() {
   resetDecks();
   updateUI();
   applyVolumeUI();
+  updateClearBadge();
 
   const high = getHighScore();
   if (high > 0) {
