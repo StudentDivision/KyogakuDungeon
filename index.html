@@ -4132,7 +4132,20 @@ async function startNewGame() {
   initAudio();
   sfx("select");
 
+  if (localStorage.getItem(NORMAL_SAVE_KEY)) {
+    const ok = confirm(
+      "通常モードのセーブデータがあります。\n" +
+      "新しく始めると、通常モードの続きからデータは上書きされます。\n\n" +
+      "本当に はじめますか？"
+    );
+
+    if (!ok) return;
+  }
+
   player = createNewPlayer();
+  player.mode = "normal";
+  player.missLimit = null;
+  player.endlessMisses = 0;
   player.battleBgmIndex = pickRandomBattleBgmIndex();
   playBattleBgm(true);
   
@@ -4163,7 +4176,21 @@ async function startEndlessGame() {
   initAudio();
   sfx("select");
 
+  if (localStorage.getItem(ENDLESS_SAVE_KEY)) {
+    const ok = confirm(
+      "エンドレスモードのセーブデータがあります。\n" +
+      "新しく始めると、エンドレスの続きからデータは上書きされます。\n\n" +
+      "本当に エンドレスを始めますか？"
+    );
+
+    if (!ok) return;
+  }
+
   player = createNewPlayer();
+
+  player.mode = "endless";
+  player.missLimit = 3;
+  player.endlessMisses = 0;
 
   player.mode = "endless";
   player.missLimit = 3;
@@ -4307,12 +4334,29 @@ deleteBtn.addEventListener("click", () => {
   initAudio();
   sfx("select");
 
-  const ok = confirm("セーブデータを削除しますか？\nスコア履歴は残ります。");
-  if (ok) {
-    deleteSave();
-    updateUI();
-    alert("セーブデータを削除しました。");
+  const target = prompt(
+    "削除するセーブを選んでください。\n" +
+    "1：通常モード\n" +
+    "2：エンドレスモード\n" +
+    "3：両方\n\n" +
+    "数字を入力してください。"
+  );
+
+  if (target === "1") {
+    localStorage.removeItem(NORMAL_SAVE_KEY);
+    alert("通常モードのセーブデータを削除しました。");
+  } else if (target === "2") {
+    localStorage.removeItem(ENDLESS_SAVE_KEY);
+    alert("エンドレスモードのセーブデータを削除しました。");
+  } else if (target === "3") {
+    localStorage.removeItem(NORMAL_SAVE_KEY);
+    localStorage.removeItem(ENDLESS_SAVE_KEY);
+    alert("通常・エンドレス両方のセーブデータを削除しました。");
+  } else {
+    return;
   }
+
+  updateUI();
 });
 
 closeOverlayBtn.addEventListener("click", () => {
