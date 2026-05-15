@@ -2585,8 +2585,9 @@ body.title-menu-open .titleHero .titleBottom {
 
 <div id="titleMenu" class="window titleButtons hidden">
 <button id="startBtn" class="primary titleBtn">はじめる</button>
-<button id="continueBtn" class="titleBtn">つづきから</button>
+<button id="continueBtn" class="titleBtn">つづきから(通常)</button>
 <button id="endlessBtn" class="titleBtn">エンドレス</button>
+<button id="endlessContinueBtn" class="titleBtn">つづきから(エンドレス)</button>
 <button id="historyBtn" class="titleBtn">スコア履歴</button>
 
   <div class="soundPanel">
@@ -2726,6 +2727,7 @@ const titleMenu = $("titleMenu");
 const startBtn = $("startBtn");
 const continueBtn = $("continueBtn");
 const endlessBtn = $("endlessBtn");
+const endlessContinueBtn = $("endlessContinueBtn");
 const historyBtn = $("historyBtn");
 const deleteBtn = $("deleteBtn");
 
@@ -2794,6 +2796,8 @@ const clearBgm = $("clearBgm");
 ========================================================= */
 
 const SAVE_KEY = "kibou_quiz_battle_save_v2";
+const NORMAL_SAVE_KEY = "kibou_quiz_battle_normal_save_v1";
+const ENDLESS_SAVE_KEY = "kibou_quiz_battle_endless_save_v1";
 const HISTORY_KEY = "kibou_quiz_battle_history_v2";
 const HIGH_SCORE_KEY = "kibou_quiz_battle_high_score_v2";
 
@@ -3441,7 +3445,10 @@ function updateUI() {
   monster.classList.add("hidden");
   }
 
-  continueBtn.disabled = !localStorage.getItem(SAVE_KEY);
+  continueBtn.disabled = !localStorage.getItem(NORMAL_SAVE_KEY);
+
+if (typeof endlessContinueBtn !== "undefined" && endlessContinueBtn) {
+  endlessContinueBtn.disabled = !localStorage.getItem(ENDLESS_SAVE_KEY);
 }
 
 function setQuizEnabled(enabled) {
@@ -3490,16 +3497,23 @@ function renderCssMonster(type) {
   セーブ処理
 ========================================================= */
 
+function getSaveKeyByMode(mode = player.mode) {
+  return mode === "endless" ? ENDLESS_SAVE_KEY : NORMAL_SAVE_KEY;
+}
+  
 function saveGame() {
-  localStorage.setItem(SAVE_KEY, JSON.stringify(player));
+  localStorage.setItem(getSaveKeyByMode(), JSON.stringify(player));
 }
 
-function loadGame() {
-  const raw = localStorage.getItem(SAVE_KEY);
+function loadGame(mode = "normal") {
+  const raw = localStorage.getItem(getSaveKeyByMode(mode));
   if (!raw) return false;
 
   try {
     player = JSON.parse(raw);
+
+    // 読み込んだデータにモードを保証する
+    player.mode = mode;
 
     if (player.enemiesSinceBoss === undefined) {
       player.enemiesSinceBoss = 0;
@@ -3509,16 +3523,12 @@ function loadGame() {
       player.battleBgmIndex = -1;
     }
 
-    if (player.mode === undefined) {
-    player.mode = "normal";
-    }
-
     if (player.endlessMisses === undefined) {
-    player.endlessMisses = 0;
+      player.endlessMisses = 0;
     }
 
     if (player.missLimit === undefined) {
-    player.missLimit = player.mode === "endless" ? 3 : null;
+      player.missLimit = mode === "endless" ? 3 : null;
     }
 
     resetDecks();
@@ -3528,8 +3538,8 @@ function loadGame() {
   }
 }
 
-function deleteSave() {
-  localStorage.removeItem(SAVE_KEY);
+function deleteSave(mode = player.mode || "normal") {
+  localStorage.removeItem(getSaveKeyByMode(mode));
 }
 
 function getHighScore() {
@@ -4189,7 +4199,7 @@ async function continueGame() {
   initAudio();
   sfx("select");
 
-  if (!loadGame()) {
+  if (!loadGame("normal")) {
     alert("セーブデータがありません。");
     return;
   }
@@ -4207,6 +4217,31 @@ async function continueGame() {
   updateUI();
 
   await showMessage("冒険を 再開します。");
+  await spawnEnemy();
+}
+
+async function continueEndlessGame() {
+  initAudio();
+  sfx("select");
+
+  if (!loadGame("endless")) {
+    alert("エンドレスモードのセーブデータがありません。");
+    return;
+  }
+
+  if (player.battleBgmIndex === undefined || player.battleBgmIndex < 0) {
+    player.battleBgmIndex = pickRandomBattleBgmIndex();
+  }
+
+  playBattleBgm();
+
+  titleScreen.classList.add("hidden");
+  resultOverlay.classList.add("hidden");
+  quizBox.classList.add("hidden");
+
+  updateUI();
+
+  await showMessage("エンドレスモードを 再開します。");
   await spawnEnemy();
 }
 
@@ -4265,6 +4300,8 @@ startBtn.addEventListener("click", startNewGame);
 endlessBtn.addEventListener("click", startEndlessGame);
 continueBtn.addEventListener("click", continueGame);
 historyBtn.addEventListener("click", showHistory);
+endlessBtn.addEventListener("click", startEndlessGame);
+endlessContinueBtn.addEventListener("click", continueEndlessGame);
 
 deleteBtn.addEventListener("click", () => {
   initAudio();
