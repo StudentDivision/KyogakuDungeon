@@ -2458,6 +2458,78 @@ body.title-menu-open .titleHero .titleBottom {
     letter-spacing: 0.025em !important;
   }
 }
+
+/* =========================================================
+  ボス画像：強敵感を出すため大きめ表示
+========================================================= */
+
+/* ボス戦だけ敵ウィンドウを少し広くする */
+#enemyArea.boss-scene {
+  flex-basis: 250px !important;
+  height: 250px !important;
+  min-height: 250px !important;
+  max-height: 250px !important;
+  padding: 8px !important;
+}
+
+/* ボス戦だけステージ部分を広げる */
+#enemyArea.boss-scene .enemyStage {
+  height: 150px !important;
+  min-height: 150px !important;
+  max-height: 150px !important;
+}
+
+/* ボス画像を大きく表示 */
+#enemyArea.boss-scene #enemyImage {
+  max-width: 190px !important;
+  max-height: 145px !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+  transform: scale(1.08);
+  filter:
+    drop-shadow(0 14px 0 rgba(0,0,0,.35))
+    drop-shadow(0 0 18px rgba(255,230,109,.34))
+    drop-shadow(0 0 26px rgba(255,120,80,.18));
+}
+
+/* ボス名も少し強く */
+#enemyArea.boss-scene .enemyName {
+  font-size: 18px !important;
+  color: #ffe66d !important;
+  text-shadow:
+    1px 1px 0 #000,
+    0 0 10px rgba(255,230,109,.55);
+}
+
+/* ボスのHPバーを少し太くする */
+#enemyArea.boss-scene .barOuter {
+  height: 10px !important;
+  width: 78% !important;
+  max-width: 300px !important;
+}
+
+/* 高さが低いスマホでは少し控えめに */
+@media (max-height: 760px) {
+  #enemyArea.boss-scene {
+    flex-basis: 225px !important;
+    height: 225px !important;
+    min-height: 225px !important;
+    max-height: 225px !important;
+  }
+
+  #enemyArea.boss-scene .enemyStage {
+    height: 128px !important;
+    min-height: 128px !important;
+    max-height: 128px !important;
+  }
+
+  #enemyArea.boss-scene #enemyImage {
+    max-width: 165px !important;
+    max-height: 125px !important;
+    transform: scale(1.04);
+  }
+}
   
 </style>
 </head>
