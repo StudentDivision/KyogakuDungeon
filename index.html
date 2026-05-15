@@ -2793,7 +2793,7 @@ body.title-menu-open .titleHero .titleBottom {
     <button id="tapStartBtn" class="tapStartBtn">TAP START</button>
   </div>
 
-<div id="titleMenu" class="window titleMenu">
+<div id="titleMenu" class="window titleMenu hidden">
   <div class="titleMainButtons">
     <button id="startBtn" class="titleBtn mainBtn">はじめる</button>
     <button id="continueBtn" class="titleBtn mainBtn">つづきから(通常)</button>
@@ -2951,8 +2951,8 @@ const achievementBtn = $("achievementBtn");
 const clearBadge = $("clearBadge");
 
 const volumeSlider = $("volumeSlider");
-const volumeText = $("volumeText");
-const muteBtn = $("muteBtn");
+const volumeText = $("volumeValue");
+const muteBtn = $("soundToggleBtn");
 
 const floorText = $("floorText");
 const scoreText = $("scoreText");
@@ -4843,9 +4843,9 @@ muteBtn.addEventListener("click", async () => {
 
 startBtn.addEventListener("click", startNewGame);
 continueBtn.addEventListener("click", continueGame);
-historyBtn.addEventListener("click", showHistory);
 endlessBtn.addEventListener("click", startEndlessGame);
 endlessContinueBtn.addEventListener("click", continueEndlessGame);
+historyBtn.addEventListener("click", showHistory);
 achievementBtn.addEventListener("click", showAchievements);
 
 deleteBtn.addEventListener("click", () => {
@@ -4946,6 +4946,12 @@ backTitleBtn.addEventListener("click", () => {
 function boot() {
   player = createNewPlayer();
   resetDecks();
+
+  // 起動直後は必ず「TAP STARTだけ表示」にする
+  document.body.classList.remove("title-menu-open");
+  titleMenu.classList.add("hidden");
+  tapStartBtn.classList.remove("hidden");
+
   updateUI();
   applyVolumeUI();
   updateClearBadge();
