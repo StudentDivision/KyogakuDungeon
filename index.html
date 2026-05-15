@@ -3048,6 +3048,7 @@ function sfx(type) {
 ========================================================= */
 
 let currentMusic = null;
+let musicToken = 0;
 let bgmGainNode = null;
 const bgmSourceMap = new WeakMap();
 
@@ -3213,52 +3214,69 @@ function toggleMute() {
   applyVolumeUI();
 }
 
-function stopAllMusic() {
+function stopAllMusic(resetTime = true) {
+  musicToken++;
+
   getAllMusicTracks().forEach(audio => {
     if (!audio) return;
-    audio.pause();
-    audio.currentTime = 0;
+
+    try {
+      audio.pause();
+      if (resetTime) audio.currentTime = 0;
+      audio.muted = musicMuted;
+    } catch (e) {}
   });
 
   currentMusic = null;
 }
 
-function playMusic(audio, restart = false) {
+async function playMusic(audio, restart = false) {
   if (!audio) return;
 
   initAudio();
 
   if (audioCtx && audioCtx.state === "suspended") {
-    audioCtx.resume().catch(() => {});
+    await audioCtx.resume().catch(() => {});
   }
 
   ensureBgmGainNode();
   setupMusicVolume();
 
-  // 同じ曲がすでに再生中なら、そのまま流し続ける
+  const token = ++musicToken;
+
+  // 同じ曲が流れているなら、再開だけでOK
   if (currentMusic === audio && !audio.paused && !restart) {
     applyBgmGain();
     return;
   }
 
-  // 別の曲に切り替える時だけ、他の曲を止める
+  // 先に全部止める。ここが重なり対策
   getAllMusicTracks().forEach(track => {
-    if (!track || track === audio) return;
-    track.pause();
-    track.currentTime = 0;
+    if (!track) return;
+
+    try {
+      track.pause();
+      track.currentTime = 0;
+      track.muted = musicMuted;
+    } catch (e) {}
   });
+
+  // 途中で別の再生命令が来ていたら中止
+  if (token !== musicToken) return;
 
   currentMusic = audio;
 
-  // restart=true の時だけ最初から再生
   if (restart) {
-    audio.currentTime = 0;
+    try {
+      audio.currentTime = 0;
+    } catch (e) {}
   }
 
+  audio.loop = true;
   audio.muted = musicMuted;
   applyBgmGain();
 
-  audio.play().catch(() => {
+  await audio.play().catch(() => {
     console.log("BGMは最初のタップ後に再生されます。");
   });
 }
@@ -3449,6 +3467,7 @@ function updateUI() {
 
 if (typeof endlessContinueBtn !== "undefined" && endlessContinueBtn) {
   endlessContinueBtn.disabled = !localStorage.getItem(ENDLESS_SAVE_KEY);
+}
 }
 
 function setQuizEnabled(enabled) {
@@ -4324,7 +4343,6 @@ muteBtn.addEventListener("click", async () => {
 });
 
 startBtn.addEventListener("click", startNewGame);
-endlessBtn.addEventListener("click", startEndlessGame);
 continueBtn.addEventListener("click", continueGame);
 historyBtn.addEventListener("click", showHistory);
 endlessBtn.addEventListener("click", startEndlessGame);
