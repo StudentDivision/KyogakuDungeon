@@ -2738,6 +2738,115 @@ body.title-menu-open .titleHero .titleBottom {
     padding: 7px 9px !important;
   }
 }
+
+/* =========================================================
+  タイトルメニュー：項目間隔を均等に整える
+========================================================= */
+
+/* メニュー全体の余白ルールを統一 */
+#titleMenu {
+  --title-menu-gap: 9px;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--title-menu-gap) !important;
+
+  padding: 11px !important;
+}
+
+/* メインボタン4つも、必ず同じ間隔で縦並びにする */
+.titleMainButtons {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--title-menu-gap) !important;
+  margin: 0 !important;
+}
+
+/* 補助ボタンも同じ間隔にする */
+.titleSubButtons {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: var(--title-menu-gap) !important;
+  margin: 0 !important;
+}
+
+/* セーブ削除は2列ぶち抜きのまま、上下間隔も同じにする */
+.titleSubButtons #deleteBtn {
+  grid-column: 1 / -1 !important;
+}
+
+/* 音量エリアも、前後の余白を勝手に広げない */
+.titleSoundBox {
+  margin: 0 !important;
+  padding: 9px 10px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+/* ボタン自体の高さ・余白を統一 */
+#titleMenu .titleBtn {
+  margin: 0 !important;
+  min-height: 48px !important;
+  padding: 8px 10px !important;
+  line-height: 1.15 !important;
+}
+
+/* メインボタンだけ、少し存在感を残す */
+#titleMenu .mainBtn {
+  min-height: 50px !important;
+}
+
+/* 補助ボタンは横並びでも高さを揃える */
+#titleMenu .subBtn {
+  min-height: 48px !important;
+}
+
+/* 音ONボタンも他のボタンと馴染ませる */
+#titleMenu .soundBtn {
+  min-height: 44px !important;
+}
+
+/* 音量の文字とスライダーの詰まり具合を整える */
+.titleSoundBox .soundHeader {
+  margin: 0 !important;
+}
+
+#volumeSlider {
+  margin: 0 !important;
+}
+
+/* 高さが低いスマホでは少しだけ圧縮 */
+@media (max-height: 760px) {
+  #titleMenu {
+    --title-menu-gap: 7px;
+    padding: 9px !important;
+  }
+
+  #titleMenu .titleBtn {
+    min-height: 44px !important;
+    padding: 7px 9px !important;
+    font-size: 14px !important;
+  }
+
+  #titleMenu .mainBtn {
+    min-height: 45px !important;
+  }
+
+  #titleMenu .subBtn {
+    min-height: 43px !important;
+  }
+
+  #titleMenu .soundBtn {
+    min-height: 40px !important;
+  }
+
+  .titleSoundBox {
+    padding: 8px 9px !important;
+    gap: 7px !important;
+  }
+}
   
 </style>
 </head>
