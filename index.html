@@ -2847,6 +2847,38 @@ body.title-menu-open .titleHero .titleBottom {
     gap: 7px !important;
   }
 }
+
+/* =========================================================
+  TAP START → メニュー表示の切り替え修正
+========================================================= */
+
+/* titleMenu は hidden が付いている時、必ず非表示にする */
+#titleMenu.hidden {
+  display: none !important;
+}
+
+/* hidden クラス全般も確実に非表示 */
+.hidden {
+  display: none !important;
+}
+
+/* TAP STARTを押した後、TAP STARTは見えなくする */
+/* ただし display:none にしないので、タイトル欄の高さは変わりにくい */
+body.title-menu-open #tapStartBtn {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* TAP START表示中はメニューを絶対に出さない */
+body:not(.title-menu-open) #titleMenu {
+  display: none !important;
+}
+
+/* TAP START後はメニューを表示 */
+body.title-menu-open #titleMenu {
+  display: flex !important;
+}
   
 </style>
 </head>
@@ -5056,10 +5088,15 @@ function boot() {
   player = createNewPlayer();
   resetDecks();
 
-  // 起動直後は必ず「TAP STARTだけ表示」にする
+  // 起動直後は必ず TAP START だけの状態に戻す
   document.body.classList.remove("title-menu-open");
   titleMenu.classList.add("hidden");
+
+  // TAP STARTボタン自体は表示状態に戻す
   tapStartBtn.classList.remove("hidden");
+  tapStartBtn.style.visibility = "";
+  tapStartBtn.style.opacity = "";
+  tapStartBtn.style.pointerEvents = "";
 
   updateUI();
   applyVolumeUI();
@@ -5070,7 +5107,6 @@ function boot() {
     scoreText.textContent = `最高 ${high}点`;
   }
 }
-
 boot();
 </script>
 </body>
