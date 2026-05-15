@@ -2579,6 +2579,165 @@ body.title-menu-open .titleHero .titleBottom {
   color: #ffe66d;
   font-weight: 900;
 }
+
+/* =========================================================
+  タイトル画面：項目が増えた時の省スペース調整
+========================================================= */
+
+#titleScreen {
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  padding:
+    calc(env(safe-area-inset-top) + 8px)
+    10px
+    calc(env(safe-area-inset-bottom) + 8px) !important;
+}
+
+/* タイトル上部を少しコンパクトに */
+.titleHero {
+  padding: 10px 12px 10px !important;
+  margin-bottom: 8px !important;
+}
+
+/* 若鷲画像まわりを少し圧縮 */
+.titleEagleWrap {
+  width: 118px !important;
+  height: 86px !important;
+  margin: 0 auto 4px !important;
+}
+
+.titleEagleImage {
+  width: 110px !important;
+  max-height: 86px !important;
+}
+
+/* 小見出し */
+.titleHero .logoSmall {
+  margin: 2px auto 5px !important;
+  padding: 3px 10px !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+}
+
+/* ゲーム名をさらにコンパクトに */
+.titleHero .titleMain {
+  width: min(100%, 230px) !important;
+  margin: 0 auto 5px !important;
+  line-height: 0.82 !important;
+}
+
+.titleHero .titleTop,
+.titleHero .titleBottom {
+  font-size: clamp(20px, 5vw, 28px) !important;
+  line-height: 0.92 !important;
+}
+
+/* キャッチコピーを確実に表示 */
+.titleHero .titleCatch {
+  display: block !important;
+  margin: 6px auto 0 !important;
+  font-size: clamp(10.5px, 2.8vw, 12px) !important;
+  line-height: 1.35 !important;
+}
+
+/* タイトルメニュー全体をコンパクトに */
+#titleMenu {
+  padding: 10px !important;
+  gap: 8px !important;
+}
+
+/* タイトルボタンを少し低くする */
+#titleMenu .titleBtn {
+  min-height: 48px !important;
+  padding: 8px 10px !important;
+  font-size: clamp(15px, 4vw, 20px) !important;
+  line-height: 1.15 !important;
+}
+
+/* 補助ボタンを2列にしたい場合 */
+.titleSubButtons {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+}
+
+/* セーブ削除は横幅いっぱい */
+.titleSubButtons #deleteBtn {
+  grid-column: 1 / -1 !important;
+}
+
+/* 音量パネルを圧縮 */
+.soundPanel,
+.titleSoundBox {
+  padding: 8px 10px !important;
+  gap: 6px !important;
+}
+
+.soundPanelHeader,
+.soundHeader {
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+
+#volumeSlider {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.miniSoundBtn,
+.soundBtn {
+  min-height: 38px !important;
+  padding: 5px 8px !important;
+  font-size: 13px !important;
+}
+
+/* 下の説明文も少し圧縮 */
+.titleInfo {
+  padding: 9px 12px !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+}
+
+/* 高さが低いスマホではさらに圧縮 */
+@media (max-height: 760px) {
+  .titleHero {
+    padding: 8px 10px 8px !important;
+  }
+
+  .titleEagleWrap {
+    width: 100px !important;
+    height: 72px !important;
+  }
+
+  .titleEagleImage {
+    width: 94px !important;
+    max-height: 72px !important;
+  }
+
+  .titleHero .titleMain {
+    width: min(100%, 210px) !important;
+    margin-bottom: 4px !important;
+  }
+
+  .titleHero .titleTop,
+  .titleHero .titleBottom {
+    font-size: clamp(18px, 4.6vw, 25px) !important;
+  }
+
+  #titleMenu .titleBtn {
+    min-height: 44px !important;
+    padding: 7px 9px !important;
+    font-size: 14px !important;
+  }
+
+  .soundPanel,
+  .titleSoundBox {
+    padding: 7px 9px !important;
+  }
+}
   
 </style>
 </head>
@@ -2634,24 +2793,30 @@ body.title-menu-open .titleHero .titleBottom {
     <button id="tapStartBtn" class="tapStartBtn">TAP START</button>
   </div>
 
-<div id="titleMenu" class="window titleButtons hidden">
-<button id="startBtn" class="primary titleBtn">はじめる</button>
-<button id="continueBtn" class="titleBtn">つづきから(通常)</button>
-<button id="endlessBtn" class="titleBtn">エンドレス</button>
-<button id="endlessContinueBtn" class="titleBtn">つづきから(エンドレス)</button>
-<button id="historyBtn" class="titleBtn">スコア履歴</button>
-<button id="achievementBtn" class="titleBtn">称号・記録</button>
-
-  <div class="soundPanel">
-    <div class="soundPanelHeader">
-      <span>音量</span>
-      <span id="volumeText">22%</span>
-    </div>
-    <input id="volumeSlider" type="range" min="0" max="100" value="22">
-    <button id="muteBtn" class="titleBtn miniSoundBtn">音ON</button>
+<div id="titleMenu" class="window titleMenu">
+  <div class="titleMainButtons">
+    <button id="startBtn" class="titleBtn mainBtn">はじめる</button>
+    <button id="continueBtn" class="titleBtn mainBtn">つづきから(通常)</button>
+    <button id="endlessBtn" class="titleBtn mainBtn">エンドレス</button>
+    <button id="endlessContinueBtn" class="titleBtn mainBtn">つづきから(エンドレス)</button>
   </div>
 
-  <button id="deleteBtn" class="danger titleBtn">セーブ削除</button>
+  <div class="titleSubButtons">
+    <button id="historyBtn" class="titleBtn subBtn">スコア履歴</button>
+    <button id="achievementBtn" class="titleBtn subBtn">称号・記録</button>
+    <button id="deleteBtn" class="titleBtn subBtn">セーブ削除</button>
+  </div>
+
+  <div class="titleSoundBox">
+    <div class="soundHeader">
+      <span>音量</span>
+      <span id="volumeValue">17%</span>
+    </div>
+
+    <input type="range" id="volumeSlider" min="0" max="100" value="17">
+
+    <button id="soundToggleBtn" class="titleBtn soundBtn">音ON</button>
+  </div>
 </div>
 
   <div class="window note titleNote">
