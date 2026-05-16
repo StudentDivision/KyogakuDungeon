@@ -3829,7 +3829,7 @@ function updateUI() {
   monster.classList.add("hidden");
   }
 
-  continueBtn.disabled = !localStorage.getItem(NORMAL_SAVE_KEY);
+  continueBtn.disabled = !hasValidNormalSave();
 
 if (typeof endlessContinueBtn !== "undefined" && endlessContinueBtn) {
   endlessContinueBtn.disabled = !localStorage.getItem(ENDLESS_SAVE_KEY);
@@ -3921,6 +3921,24 @@ function loadGame(mode = "normal") {
      }
 
     resetDecks();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function hasValidNormalSave() {
+  const raw = localStorage.getItem(NORMAL_SAVE_KEY);
+  if (!raw) return false;
+
+  try {
+    const data = JSON.parse(raw);
+
+    // 100体以上撃破済みなら、通常モードの続きから対象にしない
+    if (data.defeatedCount >= CLEAR_DEFEAT_COUNT) {
+      return false;
+    }
+
     return true;
   } catch {
     return false;
@@ -4692,8 +4710,12 @@ async function gameClear() {
   const rank = getRank(player);
   const newTitles = unlockTitlesByPlayer(player);
 
+// 通常モードをクリアしたので、通常モードの続きからデータを確実に削除する
+  localStorage.removeItem(NORMAL_SAVE_KEY);
   deleteSave("normal");
+
   updateClearBadge();
+  updateUI();
 
   await showMessage("まばゆい光が あたりを包んだ……\n100体の迷いを打ち破り、学びの旅は大きな実りをむかえました！");
 
@@ -4945,12 +4967,21 @@ async function continueGame() {
   sfx("select");
 
   if (!loadGame("normal")) {
-    alert("セーブデータがありません。");
+    alert("通常モードのセーブデータがありません。");
+    updateUI();
     return;
   }
 
-  if (player.battleBgmIndex === undefined) {
-  player.battleBgmIndex = pickRandomBattleBgmIndex();
+  // クリア済み、または100体以上撃破済みの通常セーブは再開させない
+  if (player.defeatedCount >= CLEAR_DEFEAT_COUNT) {
+    localStorage.removeItem(NORMAL_SAVE_KEY);
+    alert("通常モードはすでにクリア済みです。\n新しく遊ぶ場合は「はじめる」を押してください。");
+    updateUI();
+    return;
+  }
+
+  if (player.battleBgmIndex === undefined || player.battleBgmIndex < 0) {
+    player.battleBgmIndex = pickRandomBattleBgmIndex();
   }
 
   playBattleBgm();
