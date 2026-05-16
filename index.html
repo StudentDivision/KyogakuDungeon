@@ -3055,6 +3055,116 @@ body.title-menu-open #titleMenu {
   border-radius: 8px;
   background: rgba(0,0,0,.16);
 }
+
+/* =========================================================
+  称号特典：タップで開閉する表示
+========================================================= */
+
+.rewardCard {
+  margin-top: 9px;
+  padding: 10px;
+  border: 2px solid rgba(255,230,109,.75);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.05)),
+    rgba(20, 50, 160, .48);
+  text-align: left;
+  box-shadow:
+    inset 0 0 10px rgba(255,255,255,.08),
+    0 3px 0 rgba(0,0,0,.20);
+}
+
+.rewardCard.locked {
+  opacity: .65;
+  border-color: rgba(255,255,255,.35);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03)),
+    rgba(20, 40, 120, .36);
+}
+
+.rewardHeaderBtn {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.rewardHeaderBtn:disabled {
+  cursor: default;
+}
+
+.rewardTitleLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 900;
+  margin-bottom: 3px;
+}
+
+.rewardArrow {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: .9;
+}
+
+.rewardDesc {
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: .9;
+}
+
+.rewardLockedText {
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: .82;
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: rgba(0,0,0,.16);
+}
+
+.rewardDetail {
+  display: none;
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px dashed rgba(255,255,255,.35);
+}
+
+.rewardCard.open .rewardDetail {
+  display: block;
+}
+
+.rewardName {
+  color: var(--yellow);
+  font-weight: 900;
+  margin: 0 0 6px;
+  text-shadow:
+    0 0 8px rgba(255,230,109,.42),
+    1px 1px 0 rgba(0,0,0,.55);
+}
+
+.rewardMessage {
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+.rewardImage {
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,.85);
+  margin: 7px 0;
+  display: block;
+  box-shadow:
+    0 3px 0 rgba(0,0,0,.22),
+    0 0 14px rgba(255,255,255,.18);
+}
   
 </style>
 </head>
@@ -5152,7 +5262,7 @@ function showAchievements() {
     ${hasClearFlag() ? "達成済み" : "未達成"}<br><br>
 
     <span class="gold">称号特典</span><br>
-    獲得した称号の特別メッセージを読むことができます。
+    獲得済みの称号をタップすると、特別メッセージが開きます。
   `;
 
   historyList.classList.remove("hidden");
@@ -5163,54 +5273,63 @@ function showAchievements() {
         const got = owned.includes(t.id);
         const reward = titleRewardMaster[t.id];
 
-        // 特典データがない称号の場合
-        if (!reward) {
-          return `
-            <div class="rewardCard ${got ? "" : "locked"}">
-              <div class="rewardTitleLine">
-                ${got ? "🏅" : "□"} 
-                <span class="${got ? "gold" : ""}">${t.name}</span>
-              </div>
-              <div class="rewardDesc">${t.desc}</div>
-              ${
-                got
-                  ? `<div class="rewardMessage">この称号を獲得しました。</div>`
-                  : `<div class="rewardLockedText">この称号を獲得すると解放されます。</div>`
-              }
-            </div>
-          `;
-        }
+        // 特典データがあるかどうか
+        const hasReward = !!reward;
 
-        // 特典データがある称号の場合
+        // 獲得済み、かつ特典ありなら開閉できる
+        const canOpen = got && hasReward;
+
         return `
-          <div class="rewardCard ${got ? "" : "locked"}">
-            <div class="rewardTitleLine">
-              ${got ? "🏅" : "□"} 
-              <span class="${got ? "gold" : ""}">${t.name}</span>
-            </div>
+          <div class="rewardCard ${got ? "" : "locked"}" data-reward-id="${t.id}">
+            <button
+              type="button"
+              class="rewardHeaderBtn"
+              ${canOpen ? "" : "disabled"}
+              data-reward-toggle="${t.id}"
+            >
+              <div class="rewardTitleLine">
+                <span>${got ? "🏅" : "□"}</span>
+                <span class="${got ? "gold" : ""}">${t.name}</span>
+                ${
+                  canOpen
+                    ? `<span class="rewardArrow">▶</span>`
+                    : ""
+                }
+              </div>
 
-            <div class="rewardDesc">${t.desc}</div>
+              <div class="rewardDesc">${t.desc}</div>
+            </button>
 
             ${
               got
-                ? `
-                  <div class="rewardName">特典：${reward.rewardName}</div>
+                ? (
+                    hasReward
+                      ? `
+                        <div class="rewardDetail">
+                          <div class="rewardName">特典：${reward.rewardName}</div>
 
-                  ${
-                    reward.image
-                      ? `<img
-                          class="rewardImage"
-                          src="${reward.image}"
-                          alt="${reward.rewardName}"
-                          onerror="this.style.display='none'"
-                        >`
-                      : ""
-                  }
+                          ${
+                            reward.image
+                              ? `<img
+                                  class="rewardImage"
+                                  src="${reward.image}"
+                                  alt="${reward.rewardName}"
+                                  onerror="this.style.display='none'"
+                                >`
+                              : ""
+                          }
 
-                  <div class="rewardMessage">
-                    ${reward.message}
-                  </div>
-                `
+                          <div class="rewardMessage">
+                            ${reward.message}
+                          </div>
+                        </div>
+                      `
+                      : `
+                        <div class="rewardLockedText">
+                          この称号を獲得しました。
+                        </div>
+                      `
+                  )
                 : `
                   <div class="rewardLockedText">
                     この称号を獲得すると解放されます。
@@ -5223,8 +5342,40 @@ function showAchievements() {
     </div>
   `;
 
+  setupRewardToggle();
+
   closeOverlayBtn.textContent = "閉じる";
   resultOverlay.classList.remove("hidden");
+}
+
+function setupRewardToggle() {
+  const buttons = historyList.querySelectorAll("[data-reward-toggle]");
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.rewardToggle;
+      const card = historyList.querySelector(`[data-reward-id="${id}"]`);
+      if (!card) return;
+
+      const wasOpen = card.classList.contains("open");
+
+      historyList.querySelectorAll(".rewardCard.open").forEach(openCard => {
+        openCard.classList.remove("open");
+
+        const arrow = openCard.querySelector(".rewardArrow");
+        if (arrow) arrow.textContent = "▶";
+      });
+
+      if (!wasOpen) {
+        card.classList.add("open");
+
+        const arrow = card.querySelector(".rewardArrow");
+        if (arrow) arrow.textContent = "▼";
+      }
+
+      sfx("select");
+    });
+  });
 }
 
 /* =========================================================
