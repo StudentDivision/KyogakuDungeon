@@ -3165,6 +3165,153 @@ body.title-menu-open #titleMenu {
     0 3px 0 rgba(0,0,0,.22),
     0 0 14px rgba(255,255,255,.18);
 }
+
+/* =========================================================
+  称号特典ポップアップ
+========================================================= */
+
+.rewardPopup {
+  position: absolute;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.rewardPopup.hidden {
+  display: none !important;
+}
+
+.rewardPopupBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 12, 45, .72);
+  backdrop-filter: blur(3px);
+}
+
+.rewardPopupWindow {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  max-height: 86dvh;
+  overflow-y: auto;
+  padding: 14px !important;
+  border-radius: 18px;
+  text-align: center;
+  animation: rewardPopupIn .24s ease-out both;
+}
+
+@keyframes rewardPopupIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.rewardPopupTitle {
+  color: var(--yellow);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  text-shadow:
+    0 0 10px rgba(255,230,109,.55),
+    2px 2px 0 rgba(0,0,0,.55);
+}
+
+.rewardPopupImage {
+  width: 100%;
+  max-height: 210px;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,.92);
+  border-radius: 14px;
+  margin: 8px 0 10px;
+  box-shadow:
+    0 5px 0 rgba(0,0,0,.24),
+    0 0 20px rgba(255,255,255,.18);
+}
+
+.rewardPopupName {
+  color: var(--yellow);
+  font-size: 15px;
+  font-weight: 900;
+  margin: 8px 0 6px;
+}
+
+.rewardPopupMessage {
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 8px 0 12px;
+}
+
+#rewardPopupCloseBtn {
+  width: 100%;
+  min-height: 46px;
+}
+
+/* 称号一覧側はコンパクトにする */
+.rewardCard {
+  margin-top: 8px;
+  padding: 9px 10px;
+}
+
+.rewardHeaderBtn {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.rewardHeaderBtn:disabled {
+  cursor: default;
+}
+
+.rewardTitleLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 900;
+}
+
+.rewardArrow {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: .85;
+}
+
+/* 以前の展開式詳細が残っていても表示しない */
+.rewardDetail {
+  display: none !important;
+}
+
+@media (max-height: 760px) {
+  .rewardPopupWindow {
+    max-height: 88dvh;
+    padding: 11px !important;
+  }
+
+  .rewardPopupImage {
+    max-height: 160px;
+  }
+
+  .rewardPopupMessage {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+}
   
 </style>
 </head>
@@ -3344,6 +3491,28 @@ body.title-menu-open #titleMenu {
       <div id="historyList" class="hidden"></div>
       <button id="closeOverlayBtn" class="primary">タイトルへ</button>
     </div>
+    <!-- 称号特典ポップアップ -->
+<div id="rewardPopup" class="rewardPopup hidden">
+  <div class="rewardPopupBackdrop"></div>
+
+  <div class="rewardPopupWindow window">
+    <div id="rewardPopupTitle" class="rewardPopupTitle">
+      称号特典
+    </div>
+
+    <img
+      id="rewardPopupImage"
+      class="rewardPopupImage hidden"
+      src=""
+      alt="称号特典イラスト"
+    >
+    <div id="rewardPopupName" class="rewardPopupName"></div>
+    <div id="rewardPopupMessage" class="rewardPopupMessage"></div>
+    <button id="rewardPopupCloseBtn" class="titleBtn">
+      閉じる
+    </button>
+  </div>
+</div>
   </section>
 
 </div>
@@ -3438,6 +3607,12 @@ const choicesEl = $("choices");
 const resultOverlay = $("resultOverlay");
 const resultTitle = $("resultTitle");
 const resultBody = $("resultBody");
+const rewardPopup = $("rewardPopup");
+const rewardPopupTitle = $("rewardPopupTitle");
+const rewardPopupImage = $("rewardPopupImage");
+const rewardPopupName = $("rewardPopupName");
+const rewardPopupMessage = $("rewardPopupMessage");
+const rewardPopupCloseBtn = $("rewardPopupCloseBtn");
 const prologueOverlay = $("prologueOverlay");
 const prologueImage = $("prologueImage");
 const prologueText = $("prologueText");
@@ -5242,6 +5417,17 @@ function showAchievements() {
   initAudio();
   sfx("select");
 
+function setupRewardPopupButtons() {
+  const buttons = historyList.querySelectorAll("[data-reward-open]");
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.rewardOpen;
+      openRewardPopup(id);
+    });
+  });
+}
+
   const owned = getOwnedTitles();
   const best = getEndlessBest();
 
@@ -5262,7 +5448,7 @@ function showAchievements() {
     ${hasClearFlag() ? "達成済み" : "未達成"}<br><br>
 
     <span class="gold">称号特典</span><br>
-    獲得済みの称号をタップすると、特別メッセージが開きます。
+    獲得済みの称号をタップすると、特典ウィンドウが開きます。
   `;
 
   historyList.classList.remove("hidden");
@@ -5272,27 +5458,23 @@ function showAchievements() {
       ${titleMasterList.map(t => {
         const got = owned.includes(t.id);
         const reward = titleRewardMaster[t.id];
-
-        // 特典データがあるかどうか
         const hasReward = !!reward;
-
-        // 獲得済み、かつ特典ありなら開閉できる
         const canOpen = got && hasReward;
 
         return `
-          <div class="rewardCard ${got ? "" : "locked"}" data-reward-id="${t.id}">
+          <div class="rewardCard ${got ? "" : "locked"}">
             <button
               type="button"
               class="rewardHeaderBtn"
               ${canOpen ? "" : "disabled"}
-              data-reward-toggle="${t.id}"
+              data-reward-open="${t.id}"
             >
               <div class="rewardTitleLine">
                 <span>${got ? "🏅" : "□"}</span>
                 <span class="${got ? "gold" : ""}">${t.name}</span>
                 ${
                   canOpen
-                    ? `<span class="rewardArrow">▶</span>`
+                    ? `<span class="rewardArrow">開く ▶</span>`
                     : ""
                 }
               </div>
@@ -5304,37 +5486,10 @@ function showAchievements() {
               got
                 ? (
                     hasReward
-                      ? `
-                        <div class="rewardDetail">
-                          <div class="rewardName">特典：${reward.rewardName}</div>
-
-                          ${
-                            reward.image
-                              ? `<img
-                                  class="rewardImage"
-                                  src="${reward.image}"
-                                  alt="${reward.rewardName}"
-                                  onerror="this.style.display='none'"
-                                >`
-                              : ""
-                          }
-
-                          <div class="rewardMessage">
-                            ${reward.message}
-                          </div>
-                        </div>
-                      `
-                      : `
-                        <div class="rewardLockedText">
-                          この称号を獲得しました。
-                        </div>
-                      `
+                      ? `<div class="rewardLockedText">タップすると特典を表示します。</div>`
+                      : `<div class="rewardLockedText">この称号を獲得しました。</div>`
                   )
-                : `
-                  <div class="rewardLockedText">
-                    この称号を獲得すると解放されます。
-                  </div>
-                `
+                : `<div class="rewardLockedText">この称号を獲得すると解放されます。</div>`
             }
           </div>
         `;
@@ -5342,10 +5497,50 @@ function showAchievements() {
     </div>
   `;
 
-  setupRewardToggle();
+  setupRewardPopupButtons();
 
   closeOverlayBtn.textContent = "閉じる";
   resultOverlay.classList.remove("hidden");
+}
+
+function openRewardPopup(titleId) {
+  const owned = getOwnedTitles();
+  const title = titleMasterList.find(t => t.id === titleId);
+  const reward = titleRewardMaster[titleId];
+
+  if (!title || !reward) return;
+
+  // 未獲得なら開かない
+  if (!owned.includes(titleId)) {
+    sfx("wrong");
+    return;
+  }
+
+  sfx("select");
+
+  rewardPopupTitle.textContent = title.name;
+  rewardPopupName.textContent = `特典：${reward.rewardName}`;
+  rewardPopupMessage.innerHTML = reward.message;
+
+  if (reward.image) {
+    rewardPopupImage.src = reward.image;
+    rewardPopupImage.alt = reward.rewardName;
+    rewardPopupImage.classList.remove("hidden");
+
+    rewardPopupImage.onerror = () => {
+      rewardPopupImage.classList.add("hidden");
+    };
+  } else {
+    rewardPopupImage.src = "";
+    rewardPopupImage.classList.add("hidden");
+  }
+
+  rewardPopup.classList.remove("hidden");
+}
+
+function closeRewardPopup() {
+  sfx("select");
+  rewardPopup.classList.add("hidden");
 }
 
 function setupRewardToggle() {
@@ -5595,6 +5790,13 @@ endlessBtn.addEventListener("click", startEndlessGame);
 endlessContinueBtn.addEventListener("click", continueEndlessGame);
 historyBtn.addEventListener("click", showHistory);
 achievementBtn.addEventListener("click", showAchievements);
+rewardPopupCloseBtn.addEventListener("click", closeRewardPopup);
+
+rewardPopup.addEventListener("click", (e) => {
+  if (e.target.classList.contains("rewardPopupBackdrop")) {
+    closeRewardPopup();
+  }
+});
 
 deleteBtn.addEventListener("click", () => {
   initAudio();
