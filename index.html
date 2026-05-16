@@ -3309,6 +3309,9 @@ function createNewPlayer() {
     combo: 0,
     bestCombo: 0,
 
+    // 連続ミス数。2連続ミスで敵の強攻撃を発生させる
+    missStreak: 0,
+
     defeatedCount: 0,
     floor: 1,
     enemiesSinceBoss: 0,
@@ -3913,6 +3916,10 @@ function loadGame(mode = "normal") {
       player.missLimit = mode === "endless" ? 3 : null;
     }
 
+    if (player.missStreak === undefined) {
+     player.missStreak = 0;
+     }
+
     resetDecks();
     return true;
   } catch {
@@ -4201,7 +4208,10 @@ if (player.mode === "endless") {
     const baseHp = 72 + player.floor * 15 + progressRank * 10;
     const baseAtk = 8 + player.floor * 2 + Math.floor(progressRank / 2);
 
-    const hp = Math.floor(baseHp * difficultyRate);
+    // ボスHPは約25%アップして、強敵感を出す
+    const hp = Math.floor(baseHp * difficultyRate * 1.25);
+
+    // ボス攻撃力は後で不正解時補正を入れるので、ここでは上げすぎない
     const atk = Math.floor(baseAtk * (1 + progressRank * 0.025));
 
     return {
@@ -4223,8 +4233,18 @@ if (player.mode === "endless") {
   const baseHp = template.baseHp + player.floor * 3 + progressRank * 3;
   const baseAtk = template.baseAtk + player.floor + Math.floor(progressRank / 3);
 
-  const hp = Math.floor(baseHp * difficultyRate);
-  const atk = Math.floor(baseAtk * (1 + progressRank * 0.02));
+  // 通常敵HPは約10%アップ。硬くしすぎず、少しだけ緊張感を出す
+  const hp = Math.floor(baseHp * difficultyRate * 1.10);
+
+  let atkRate = 1 + progressRank * 0.02;
+
+  // エンドレスは30体以降から敵攻撃力が少しずつ上がる
+  if (player.mode === "endless" && player.defeatedCount >= 30) {
+  const endlessRank = Math.floor((player.defeatedCount - 30) / 10) + 1;
+  atkRate += endlessRank * 0.04;
+  }
+
+  const atk = Math.floor(baseAtk * atkRate);
 
   return {
     name: template.name,
@@ -4398,6 +4418,9 @@ async function handleCorrect() {
   player.correctCount++;
   player.combo++;
   player.bestCombo = Math.max(player.bestCombo, player.combo);
+  
+  // 正解したら連続ミスをリセット
+  player.missStreak = 0;
 
   const expGain = currentQuiz.challenge ? 18 : 7;
   player.exp += expGain;
@@ -4436,6 +4459,9 @@ async function handleWrong(index) {
   player.wrongCount++;
   player.combo = 0;
 
+  // 連続ミス数を加算
+  player.missStreak++;
+
   const correctText = currentQuiz.choices[currentQuiz.answer];
 
   if (index === -1) {
@@ -4464,11 +4490,23 @@ async function handleWrong(index) {
     );
   }
 
-  await enemyAttack();
+  const isPowerAttack = player.missStreak >= 2;
+  await enemyAttack(isPowerAttack);
 }
 
-async function enemyAttack() {
-  const rawDamage = currentEnemy.attack + rand(-1, 3);
+async function enemyAttack(isPowerAttack = false) {
+  let rawDamage = currentEnemy.attack + rand(-1, 3);
+
+  // ⑥ ボスの不正解ダメージは通常よりやや高め
+  if (currentEnemy && currentEnemy.boss) {
+    rawDamage = Math.floor(rawDamage * 1.18);
+  }
+
+  // ⑤ 2連続ミスで強攻撃
+  if (isPowerAttack) {
+    rawDamage = Math.floor(rawDamage * 1.45);
+  }
+
   const damage = Math.max(1, rawDamage - player.defense);
 
   player.hp -= damage;
@@ -4478,7 +4516,23 @@ async function enemyAttack() {
   screenShake();
   updateUI();
 
-  await showMessage(`${currentEnemy.name}の こうげき！\n${damage}の ダメージを 受けた！`);
+  if (isPowerAttack) {
+    await showMessage(
+      `${currentEnemy.name}の 強攻撃！\n` +
+      `連続ミスのすきを突かれた！\n` +
+      `${damage}の ダメージを 受けた！`
+    );
+  } else if (currentEnemy && currentEnemy.boss) {
+    await showMessage(
+      `${currentEnemy.name}の 重い一撃！\n` +
+      `${damage}の ダメージを 受けた！`
+    );
+  } else {
+    await showMessage(
+      `${currentEnemy.name}の こうげき！\n` +
+      `${damage}の ダメージを 受けた！`
+    );
+  }
 
   if (player.hp <= 0) {
     await gameOver();
@@ -4565,8 +4619,13 @@ async function checkLevelUp() {
     player.level++;
 
     const hpUp = rand(5, 9);
-    const attackUp = player.level % 3 === 0 ? 3 : 2;
-    const quizPowerUp = player.level % 2 === 0 ? 3 : 2;
+// 攻撃力の伸びを少し抑える
+// 以前：基本+2、3レベルごとに+3
+// 今回：基本+1、4レベルごとに+2
+    const attackUp = player.level % 4 === 0 ? 2 : 1;
+
+// クイズ力は気持ちよさを残すため、少しだけ高めに維持
+    const quizPowerUp = player.level % 3 === 0 ? 3 : 2;
 
     player.maxHp += hpUp;
     player.attack += attackUp;
