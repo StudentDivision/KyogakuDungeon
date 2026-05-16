@@ -2981,6 +2981,80 @@ body.title-menu-open #titleMenu {
     min-height: 46px;
   }
 }
+
+/* =========================================================
+  称号特典表示
+========================================================= */
+
+.rewardCard {
+  margin-top: 10px;
+  padding: 10px;
+  border: 2px solid rgba(255,230,109,.75);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.05)),
+    rgba(20, 50, 160, .48);
+  text-align: left;
+  box-shadow:
+    inset 0 0 10px rgba(255,255,255,.08),
+    0 3px 0 rgba(0,0,0,.20);
+}
+
+.rewardCard.locked {
+  opacity: .62;
+  border-color: rgba(255,255,255,.35);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03)),
+    rgba(20, 40, 120, .36);
+}
+
+.rewardTitleLine {
+  font-weight: 900;
+  margin-bottom: 3px;
+}
+
+.rewardDesc {
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: .9;
+  margin-bottom: 7px;
+}
+
+.rewardName {
+  color: var(--yellow);
+  font-weight: 900;
+  margin: 6px 0 5px;
+  text-shadow:
+    0 0 8px rgba(255,230,109,.42),
+    1px 1px 0 rgba(0,0,0,.55);
+}
+
+.rewardMessage {
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.rewardImage {
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,.85);
+  margin: 7px 0;
+  display: block;
+  box-shadow:
+    0 3px 0 rgba(0,0,0,.22),
+    0 0 14px rgba(255,255,255,.18);
+}
+
+.rewardLockedText {
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: .82;
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: rgba(0,0,0,.16);
+}
   
 </style>
 </head>
@@ -4206,6 +4280,93 @@ const titleMasterList = [
   }
 ];
 
+/* =========================================================
+  称号特典データ
+  獲得済み称号だけ、特別文章・画像を表示する
+========================================================= */
+
+const titleRewardMaster = {
+  first_win: {
+    rewardName: "旅立ちの言葉",
+    message:
+      "青春に、取り返しのつかないことなど絶対にない。<br>" +
+      "つねに「さあ、きょうから！」「これから！」「今から！」「この瞬間から！」と未来を見つめて進むことです。",
+    image: "assets/rewards/reward_first_win.png"
+  },
+
+  young_eagle: {
+    rewardName: "若鷲の羽ばたき",
+    message:
+      "若鷲は、向かい風の中で翼を鍛えます。<br>" +
+      "学び続ける心は、未来へ飛び立つ力になります。",
+    image: "assets/rewards/reward_young_eagle.png"
+  },
+
+  clear_100: {
+    rewardName: "希望の頂",
+    message:
+      "100の迷いを越えた先に見えたのは、まばゆい希望の空。<br>" +
+      "積み重ねた一問一答は、自分を照らす光になりました。",
+    image: "assets/rewards/reward_clear_100.png"
+  },
+
+  no_miss_clear: {
+    rewardName: "澄みわたる心",
+    message:
+      "揺れない集中と、積み重ねた学びが道を照らしました。<br>" +
+      "静かな強さこそ、本当の勇気なのかもしれません。",
+    image: "assets/rewards/reward_no_miss.png"
+  },
+
+  high_accuracy: {
+    rewardName: "知恵の灯火",
+    message:
+      "知識は、ただ覚えるためだけのものではありません。<br>" +
+      "人生を励まし、友を照らす光として輝いていきます。",
+    image: "assets/rewards/reward_high_accuracy.png"
+  },
+
+  combo_20: {
+    rewardName: "連なる光",
+    message:
+      "一つの正解が、次の正解を呼びます。<br>" +
+      "集中の連なりは、迷いを打ち破る大きな力になります。",
+    image: "assets/rewards/reward_combo_20.png"
+  },
+
+  endless_30: {
+    rewardName: "折れない翼",
+    message:
+      "先が見えない道でも、進み続ける人には新しい景色が開けます。<br>" +
+      "不屈の心は、暗い道にも小さな光を見つけます。",
+    image: "assets/rewards/reward_endless_30.png"
+  },
+
+  endless_50: {
+    rewardName: "限界の向こうへ",
+    message:
+      "もう無理だと思ったその先に、新しい力が眠っています。<br>" +
+      "挑戦は、自分でも知らなかった自分に出会う旅です。",
+    image: "assets/rewards/reward_endless_50.png"
+  },
+
+  endless_100: {
+    rewardName: "大空の誓い",
+    message:
+      "どこまでも続く道を、あなたは歩み抜きました。<br>" +
+      "その挑戦の軌跡は、希望を信じる心そのものです。",
+    image: "assets/rewards/reward_endless_100.png"
+  },
+
+  level_20: {
+    rewardName: "積み重ねの証",
+    message:
+      "昨日より少し強く、昨日より少し深く。<br>" +
+      "成長とは、小さな前進をあきらめない心から生まれます。",
+    image: "assets/rewards/reward_level_20.png"
+  }
+};
+
 function getAccuracy(p = player) {
   return p.totalAnswered
     ? Math.round(p.correctCount / p.totalAnswered * 100)
@@ -4988,19 +5149,74 @@ function showAchievements() {
     ${best.date ? `更新日：${best.date}<br>` : ""}
     <br>
     <span class="gold">通常クリア</span><br>
-    ${hasClearFlag() ? "達成済み" : "未達成"}
+    ${hasClearFlag() ? "達成済み" : "未達成"}<br><br>
+
+    <span class="gold">称号特典</span><br>
+    獲得した称号の特別メッセージを読むことができます。
   `;
 
   historyList.classList.remove("hidden");
+
   historyList.innerHTML = `
     <div class="window" style="text-align:left; font-size:13px; line-height:1.65;">
       ${titleMasterList.map(t => {
         const got = owned.includes(t.id);
+        const reward = titleRewardMaster[t.id];
+
+        // 特典データがない称号の場合
+        if (!reward) {
+          return `
+            <div class="rewardCard ${got ? "" : "locked"}">
+              <div class="rewardTitleLine">
+                ${got ? "🏅" : "□"} 
+                <span class="${got ? "gold" : ""}">${t.name}</span>
+              </div>
+              <div class="rewardDesc">${t.desc}</div>
+              ${
+                got
+                  ? `<div class="rewardMessage">この称号を獲得しました。</div>`
+                  : `<div class="rewardLockedText">この称号を獲得すると解放されます。</div>`
+              }
+            </div>
+          `;
+        }
+
+        // 特典データがある称号の場合
         return `
-          <div style="margin-bottom:8px;">
-            ${got ? "🏅" : "□"} 
-            <span class="${got ? "gold" : ""}">${t.name}</span><br>
-            <span style="font-size:12px;">${t.desc}</span>
+          <div class="rewardCard ${got ? "" : "locked"}">
+            <div class="rewardTitleLine">
+              ${got ? "🏅" : "□"} 
+              <span class="${got ? "gold" : ""}">${t.name}</span>
+            </div>
+
+            <div class="rewardDesc">${t.desc}</div>
+
+            ${
+              got
+                ? `
+                  <div class="rewardName">特典：${reward.rewardName}</div>
+
+                  ${
+                    reward.image
+                      ? `<img
+                          class="rewardImage"
+                          src="${reward.image}"
+                          alt="${reward.rewardName}"
+                          onerror="this.style.display='none'"
+                        >`
+                      : ""
+                  }
+
+                  <div class="rewardMessage">
+                    ${reward.message}
+                  </div>
+                `
+                : `
+                  <div class="rewardLockedText">
+                    この称号を獲得すると解放されます。
+                  </div>
+                `
+            }
           </div>
         `;
       }).join("")}
