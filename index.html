@@ -4300,8 +4300,8 @@ messageBox.addEventListener("click", () => {
 function updateUI() {
   updateFloorBackground();
   updateEnemyBackground();
-  if (player.mode === "endless") {
-  floorText.textContent = ` 第${player.floor}層 撃破${player.defeatedCount} ミス${player.endlessMisses}/${player.missLimit}`;
+if (player.mode === "endless") {
+  floorText.textContent = ` 第${player.floor}層 撃破${player.defeatedCount}`;
 } else {
   floorText.textContent = ` 第${player.floor}層 撃破${player.defeatedCount}/${CLEAR_DEFEAT_COUNT}`;
 }
@@ -4419,7 +4419,7 @@ function loadGame(mode = "normal") {
     }
 
     if (player.missLimit === undefined) {
-      player.missLimit = mode === "endless" ? 3 : null;
+    player.missLimit = null;
     }
 
     if (player.missStreak === undefined) {
@@ -5081,26 +5081,7 @@ async function handleWrong(index) {
     await showMessage(`ざんねん！\n正解は「${correctText}」。\n${currentQuiz.explanation}`);
   }
 
-  if (player.mode === "endless") {
-    player.endlessMisses++;
-    updateUI();
-
-    if (player.endlessMisses >= player.missLimit) {
-      await showMessage(
-        `ミスが ${player.missLimit}回に なりました……\n` +
-        "エンドレスモード終了です。"
-      );
-
-      await gameOver();
-      return;
-    }
-
-    await showMessage(
-      `残りミス可能回数：${player.missLimit - player.endlessMisses}回\n` +
-      "まだ大丈夫。次の一問へ進みましょう！"
-    );
-  }
-
+  // 2連続ミスなら強攻撃
   const isPowerAttack = player.missStreak >= 2;
   await enemyAttack(isPowerAttack);
 }
@@ -5641,7 +5622,9 @@ async function startEndlessGame() {
   player = createNewPlayer();
 
   player.mode = "endless";
-  player.missLimit = 3;
+
+  // 今は3ミス終了ルールを使わないため、記録だけ初期化しておく
+  player.missLimit = null;
   player.endlessMisses = 0;
 
   player.mode = "endless";
@@ -5662,14 +5645,14 @@ async function startEndlessGame() {
   playFlash("ENDLESS!", "showLevel");
 
   await showMessage(
-    "エンドレスモード開始！\n" +
-    "3回まちがえると 冒険終了です。"
-  );
+  "エンドレスモード開始！\n" +
+  "HPが尽きるまで、冒険は続きます。"
+);
 
   await showMessage(
-    "階を重ねるほど、迷いの敵は強くなる……\n" +
-    "どこまで進めるか挑戦しましょう！"
-  );
+  "階を重ねるほど、迷いの敵は強くなる……\n" +
+  "どこまで進めるか挑戦しましょう！"
+);
 
   await spawnEnemy();
 }
