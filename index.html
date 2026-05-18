@@ -4558,21 +4558,24 @@ function stopAllMusic(resetTime = true) {
   currentMusic = null;
 }
 
-async function playMusic(audio, restart = false) {
-  if (!audio) return;
+ensureBgmGainNode();
+setupMusicVolume();
 
-  initAudio();
-
-  if (audioCtx && audioCtx.state === "suspended") {
-    await audioCtx.resume().catch(() => {});
-  }
-
-  ensureBgmGainNode();
-  setupMusicVolume();
+// すでに同じBGMが流れているなら、止め直さない
+// スコア履歴・称号画面からタイトルへ戻る時のBGMリセット防止
+if (
+  currentMusic === audio &&
+  !restart &&
+  audio &&
+  !audio.paused
+) {
+  applyBgmGain();
+  return;
+}
 
   const token = ++musicToken;
 
-  // まず全BGMを確実に止める
+// まず全BGMを確実に止める
   getAllMusicTracks().forEach(track => {
     if (!track) return;
 
@@ -5632,11 +5635,11 @@ async function spawnEnemy() {
   updateUI();
 
   if (currentEnemy.boss) {
-    await showBossEntrance(currentEnemy);
-  } else {
-    playBattleBgm();
-    await showMessage(`${currentEnemy.name}が あらわれた！`);
-  }
+  await showBossEntrance(currentEnemy);
+} else {
+  await playBattleBgm(false);
+  await showMessage(`${currentEnemy.name}が あらわれた！`);
+}
 
   startQuestion();
 }
@@ -6328,8 +6331,9 @@ async function startNewGame() {
   player.missLimit = null;
   player.endlessMisses = 0;
   player.battleBgmIndex = pickRandomBattleBgmIndex();
-  await playBattleBgm(true);
-  
+
+// ここではまだバトルBGMを流さない。
+// プロローグ・相棒選択・相棒のひと言までは title.mp3 のまま。
   resetDecks();
 
   titleScreen.classList.add("hidden");
@@ -6381,8 +6385,9 @@ async function startEndlessGame() {
   player.endlessMisses = 0;
 
   player.battleBgmIndex = pickRandomBattleBgmIndex();
-  await playBattleBgm(true);
 
+// ここではまだバトルBGMを流さない。
+// 相棒選択・相棒のひと言までは title.mp3 のまま。
   resetDecks();
 
   titleScreen.classList.add("hidden");
@@ -6606,7 +6611,7 @@ closeOverlayBtn.addEventListener("click", async () => {
   document.body.classList.add("title-menu-open");
   titleMenu.classList.remove("hidden");
 
-  await playTitleBgm(true);
+  await playTitleBgm(false);
   updateUI();
 });
 
@@ -6638,7 +6643,7 @@ backTitleBtn.addEventListener("click", async () => {
   document.body.classList.add("title-menu-open");
   titleMenu.classList.remove("hidden");
 
-  await playTitleBgm(true);
+  await playTitleBgm(false);
   updateUI();
 });
 
