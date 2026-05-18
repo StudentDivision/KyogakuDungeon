@@ -3118,16 +3118,16 @@ body.title-menu-open .titleHero .titleSingle {
   width: 100%;
   max-width: 430px;
   text-align: center;
-  padding: 14px !important;
-  border-radius: 18px;
+  padding: 16px 14px 18px !important;
+  border-radius: 20px;
 }
 
 .partnerSelectTitle {
   color: var(--yellow);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 900;
   letter-spacing: 2px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   text-shadow:
     0 0 10px rgba(255,255,255,.70),
     2px 2px 0 rgba(0,0,0,.55);
@@ -3136,53 +3136,121 @@ body.title-menu-open .titleHero .titleSingle {
 .partnerSelectLead {
   font-size: 13px;
   line-height: 1.6;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
+/* 三角形レイアウト */
 .partnerList {
   display: grid;
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
 }
 
+/* 上のソラだけ中央に大きく置く */
+.partnerChoiceBtnTop {
+  grid-column: 1 / -1;
+  width: min(250px, 100%);
+  justify-self: center;
+}
+
+/* カード全体 */
 .partnerChoiceBtn {
-  display: grid;
-  grid-template-columns: 76px 1fr;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  min-height: 94px;
-  text-align: left;
-  padding: 8px 10px;
+  justify-content: flex-start;
+  text-align: center;
+  gap: 8px;
+  min-height: 0;
+  padding: 12px 10px 14px;
+  border-radius: 20px;
+}
+
+/* 画像を大きく見せる */
+.partnerChoiceImageWrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .partnerChoiceImage {
-  width: 72px;
-  height: 72px;
-  object-fit: contain;
-  border-radius: 16px;
-  background: rgba(255,255,255,.14);
-  border: 2px solid rgba(255,255,255,.78);
+  width: min(100%, 122px);
+  aspect-ratio: 1 / 1;
+  height: auto;
+  object-fit: cover;
+  border-radius: 18px;
+  background: rgba(255,255,255,.12);
+  border: 2px solid rgba(255,255,255,.82);
   box-shadow:
-    0 3px 0 rgba(0,0,0,.22),
-    0 0 12px rgba(255,255,255,.18);
+    0 4px 0 rgba(0,0,0,.22),
+    0 0 14px rgba(255,255,255,.18);
+}
+
+/* 上のソラは少し大きめ */
+.partnerChoiceBtnTop .partnerChoiceImage {
+  width: min(100%, 152px);
+}
+
+.partnerChoiceText {
+  width: 100%;
 }
 
 .partnerChoiceName {
   color: var(--yellow);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 900;
-  margin-bottom: 3px;
+  line-height: 1.2;
+  margin-bottom: 4px;
+  text-shadow:
+    1px 1px 0 rgba(0,0,0,.55);
 }
 
 .partnerChoiceCatch {
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.45;
+  opacity: .95;
 }
 
 .partnerChoicePersonality {
-  font-size: 11.5px;
+  font-size: 10.5px;
   line-height: 1.45;
-  opacity: .9;
-  margin-top: 3px;
+  opacity: .88;
+  margin-top: 4px;
+}
+
+@media (max-width: 390px) {
+  .partnerSelectCard {
+    padding: 14px 12px 16px !important;
+  }
+
+  .partnerList {
+    gap: 10px;
+  }
+
+  .partnerChoiceBtn {
+    padding: 10px 8px 12px;
+  }
+
+  .partnerChoiceImage {
+    width: min(100%, 108px);
+  }
+
+  .partnerChoiceBtnTop .partnerChoiceImage {
+    width: min(100%, 136px);
+  }
+
+  .partnerChoiceName {
+    font-size: 15px;
+  }
+
+  .partnerChoiceCatch {
+    font-size: 10px;
+  }
+
+  .partnerChoicePersonality {
+    font-size: 9.8px;
+  }
 }
 
 /* =========================================================
@@ -4176,13 +4244,13 @@ function getCurrentBattleBgm() {
   return list[player.battleBgmIndex] || list[0];
 }
 
-function changeBattleBgmRandomly() {
+async function changeBattleBgmRandomly() {
   player.battleBgmIndex = pickRandomBattleBgmIndex();
-  playBattleBgm(true);
+  await playBattleBgm(true);
 }
 
-function playBattleBgm(restart = false) {
-  playMusic(getCurrentBattleBgm(), restart);
+async function playBattleBgm(restart = false) {
+  await playMusic(getCurrentBattleBgm(), restart);
 }
 
 function setupMusicVolume() {
@@ -4309,27 +4377,28 @@ async function playMusic(audio, restart = false) {
 
   const token = ++musicToken;
 
-  // 同じ曲が流れているなら、再開だけでOK
-  if (currentMusic === audio && !audio.paused && !restart) {
-    applyBgmGain();
-    return;
-  }
-
-  // 先に全部止める。ここが重なり対策
+  // まず全BGMを確実に止める
   getAllMusicTracks().forEach(track => {
     if (!track) return;
 
     try {
       track.pause();
-      track.currentTime = 0;
+
+      // 別の曲、または再スタート時は先頭に戻す
+      if (track !== audio || restart) {
+        track.currentTime = 0;
+      }
+
       track.muted = musicMuted;
     } catch (e) {}
   });
 
-  // 途中で別の再生命令が来ていたら中止
+  // この再生命令が古くなっていたら中止
   if (token !== musicToken) return;
 
   currentMusic = audio;
+  audio.loop = true;
+  audio.muted = musicMuted;
 
   if (restart) {
     try {
@@ -4337,25 +4406,32 @@ async function playMusic(audio, restart = false) {
     } catch (e) {}
   }
 
-  audio.loop = true;
-  audio.muted = musicMuted;
   applyBgmGain();
 
-  await audio.play().catch(() => {
+  try {
+    await audio.play();
+
+    // play() 完了後に、別のBGM命令が来ていたら止める
+    if (token !== musicToken) {
+      audio.pause();
+      audio.currentTime = 0;
+      return;
+    }
+  } catch (e) {
     console.log("BGMは最初のタップ後に再生されます。");
-  });
+  }
 }
 
-function playTitleBgm() {
-  playMusic(titleBgm);
+async function playTitleBgm(restart = false) {
+  await playMusic(titleBgm, restart);
 }
 
-function playBossBgm() {
-  playMusic(getRandomBossBgm(), true);
+async function playBossBgm() {
+  await playMusic(getRandomBossBgm(), true);
 }
 
-function playClearBgm() {
-  playMusic(clearBgm);
+async function playClearBgm() {
+  await playMusic(clearBgm, true);
 }
 
   let bossBgmIndex = -1;
@@ -4504,15 +4580,21 @@ function pickPartnerLine(partner, type) {
 function showPartnerSelect() {
   return new Promise((resolve) => {
     partnerListEl.innerHTML = partnerList.map(p => `
-      <button type="button" class="partnerChoiceBtn" data-partner-id="${p.id}">
-        <img
-          class="partnerChoiceImage"
-          src="${p.image}"
-          alt="${p.name}"
-          onerror="this.style.display='none'"
-        >
+      <button
+        type="button"
+        class="partnerChoiceBtn ${p.id === "sora" ? "partnerChoiceBtnTop" : ""}"
+        data-partner-id="${p.id}"
+      >
+        <div class="partnerChoiceImageWrap">
+          <img
+            class="partnerChoiceImage"
+            src="${p.image}"
+            alt="${p.name}"
+            onerror="this.style.display='none'"
+          >
+        </div>
 
-        <div>
+        <div class="partnerChoiceText">
           <div class="partnerChoiceName">${p.species} ${p.name}</div>
           <div class="partnerChoiceCatch">${p.catch}</div>
           <div class="partnerChoicePersonality">${p.personality}</div>
@@ -5307,7 +5389,7 @@ async function showBossEntrance(enemy) {
     "強い迷いの気配が 近づいてくる！"
   );
 
-  playBossBgm();
+  await playBossBgm();
   playFlash("BOSS", "showLevel");
 
   await wait(500);
@@ -5329,7 +5411,7 @@ async function spawnEnemy() {
   if (currentEnemy.boss) {
     await showBossEntrance(currentEnemy);
   } else {
-    playBattleBgm();
+    await playBattleBgm();
     await showMessage(`${currentEnemy.name}が あらわれた！`);
   }
 
@@ -5591,8 +5673,8 @@ if (currentEnemy.boss) {
   updateFloorBackground();
   updateEnemyBackground();
 
-  changeBattleBgmRandomly();
-  
+  await changeBattleBgmRandomly();
+
   await showMessage(`フロアボスを たおした！\n第${player.floor}層へ すすみます。`);
 }
 
@@ -5702,7 +5784,7 @@ async function gameClear() {
   document.body.classList.remove("quiz-active");
 
   stopAllMusic();
-  playClearBgm();
+  await playClearBgm();
 
   sfx("level");
   playFlash("CLEAR!", "showLevel");
@@ -6023,7 +6105,7 @@ async function startNewGame() {
   player.missLimit = null;
   player.endlessMisses = 0;
   player.battleBgmIndex = pickRandomBattleBgmIndex();
-  playBattleBgm(true);
+  await playBattleBgm(true);
   
   resetDecks();
 
@@ -6077,7 +6159,7 @@ async function startEndlessGame() {
   player.endlessMisses = 0;
 
   player.battleBgmIndex = pickRandomBattleBgmIndex();
-  playBattleBgm(true);
+  await playBattleBgm(true);
 
   resetDecks();
 
@@ -6130,7 +6212,7 @@ async function continueGame() {
     player.battleBgmIndex = pickRandomBattleBgmIndex();
   }
 
-  playBattleBgm();
+  await playBattleBgm();
 
   titleScreen.classList.add("hidden");
   resultOverlay.classList.add("hidden");
@@ -6155,7 +6237,7 @@ async function continueEndlessGame() {
     player.battleBgmIndex = pickRandomBattleBgmIndex();
   }
 
-  playBattleBgm();
+  await playBattleBgm();
 
   titleScreen.classList.add("hidden");
   resultOverlay.classList.add("hidden");
@@ -6179,7 +6261,7 @@ tapStartBtn.addEventListener("click", async () => {
   }
 
   sfx("select");
-  playTitleBgm();
+  await playTitleBgm(true);
 
   document.body.classList.add("title-menu-open");
   titleMenu.classList.remove("hidden");
@@ -6207,14 +6289,20 @@ muteBtn.addEventListener("click", async () => {
   toggleMute();
 
   if (!musicMuted) {
-    sfx("select");
+  sfx("select");
 
-    // タイトル画面ならタイトルBGMを再開
-    if (!titleScreen.classList.contains("hidden")) {
-      playTitleBgm();
-    } else if (currentMusic) {
-      currentMusic.play().catch(() => {});
-    }
+  // タイトル画面ならタイトルBGMを再開
+  if (!titleScreen.classList.contains("hidden")) {
+    await playTitleBgm();
+  } else if (currentMusic) {
+    await playMusic(currentMusic);
+  }
+ }
+});
+
+  document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    stopAllMusic(false);
   }
 });
 
@@ -6288,7 +6376,7 @@ deleteBtn.addEventListener("click", () => {
   updateClearBadge();
 });
 
-closeOverlayBtn.addEventListener("click", () => {
+closeOverlayBtn.addEventListener("click", async () => {
   resultOverlay.classList.add("hidden");
   historyList.classList.add("hidden");
   titleScreen.classList.remove("hidden");
@@ -6296,11 +6384,11 @@ closeOverlayBtn.addEventListener("click", () => {
   document.body.classList.add("title-menu-open");
   titleMenu.classList.remove("hidden");
 
-  playTitleBgm();
+  await playTitleBgm(true);
   updateUI();
 });
 
-backTitleBtn.addEventListener("click", () => {
+backTitleBtn.addEventListener("click", async () => {
   initAudio();
   sfx("select");
 
@@ -6328,7 +6416,7 @@ backTitleBtn.addEventListener("click", () => {
   document.body.classList.add("title-menu-open");
   titleMenu.classList.remove("hidden");
 
-  playTitleBgm();
+  await playTitleBgm(true);
   updateUI();
 });
 
