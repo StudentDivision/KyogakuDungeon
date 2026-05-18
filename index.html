@@ -4848,8 +4848,14 @@ function showPartnerMessage(type = "start", options = {}) {
 
     partnerMessageOverlay.classList.toggle("partner-opening", isOpening);
 
-    partnerMessageImage.src = partner.image;
-    partnerMessageImage.alt = partner.name;
+    // 冒険開始時だけ、勇者と相棒の特別イラストを使う
+    const imageSrc =
+      isOpening && partner.openingImage
+        ? partner.openingImage
+        : partner.image;
+
+    partnerMessageImage.src = imageSrc;
+    partnerMessageImage.alt = `${partner.species} ${partner.name}`;
     partnerMessageImage.style.display = "block";
 
     partnerMessageImage.onerror = () => {
@@ -5199,6 +5205,7 @@ const partnerList = [
     species: "若鷲",
     catch: "希望の空へ導く相棒",
     image: "assets/partners/partner_eagle.png",
+    openingImage: "assets/partners/opening_eagle.png",
     personality: "明るく前向き。迷った時に背中を押してくれる。",
     lines: {
       start: [
@@ -5230,6 +5237,7 @@ const partnerList = [
     species: "獅子",
     catch: "勇気を燃やす黄金の相棒",
     image: "assets/partners/partner_lion.png",
+    openingImage: "assets/partners/opening_lion.png",
     personality: "堂々として熱い。ピンチの時に勇気をくれる。",
     lines: {
       start: [
@@ -5261,6 +5269,7 @@ const partnerList = [
     species: "白馬",
     catch: "清らかな光で導く相棒",
     image: "assets/partners/partner_horse.png",
+    openingImage: "assets/partners/opening_horse.png",
     personality: "穏やかで誠実。焦った時に心を整えてくれる。",
     lines: {
       start: [
