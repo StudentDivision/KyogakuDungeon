@@ -3091,6 +3091,205 @@ body.title-menu-open .titleHero .titleSingle {
     letter-spacing: 0 !important;
   }
 }
+
+
+/* =========================================================
+  相棒選択画面
+========================================================= */
+
+#partnerOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 75;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255,255,255,.55), transparent 24%),
+    linear-gradient(180deg, rgba(70,190,255,.94), rgba(20,70,180,.96));
+}
+
+#partnerOverlay.hidden {
+  display: none !important;
+}
+
+.partnerSelectCard {
+  width: 100%;
+  max-width: 430px;
+  text-align: center;
+  padding: 14px !important;
+  border-radius: 18px;
+}
+
+.partnerSelectTitle {
+  color: var(--yellow);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+  text-shadow:
+    0 0 10px rgba(255,255,255,.70),
+    2px 2px 0 rgba(0,0,0,.55);
+}
+
+.partnerSelectLead {
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.partnerList {
+  display: grid;
+  gap: 10px;
+}
+
+.partnerChoiceBtn {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  align-items: center;
+  gap: 10px;
+  min-height: 94px;
+  text-align: left;
+  padding: 8px 10px;
+}
+
+.partnerChoiceImage {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 16px;
+  background: rgba(255,255,255,.14);
+  border: 2px solid rgba(255,255,255,.78);
+  box-shadow:
+    0 3px 0 rgba(0,0,0,.22),
+    0 0 12px rgba(255,255,255,.18);
+}
+
+.partnerChoiceName {
+  color: var(--yellow);
+  font-size: 16px;
+  font-weight: 900;
+  margin-bottom: 3px;
+}
+
+.partnerChoiceCatch {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.partnerChoicePersonality {
+  font-size: 11.5px;
+  line-height: 1.45;
+  opacity: .9;
+  margin-top: 3px;
+}
+
+/* =========================================================
+  相棒メッセージ画面
+========================================================= */
+
+#partnerMessageOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 85;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 16, 60, .52);
+  backdrop-filter: blur(2px);
+}
+
+#partnerMessageOverlay.hidden {
+  display: none !important;
+}
+
+.partnerMessageCard {
+  width: 100%;
+  max-width: 430px;
+  display: grid;
+  grid-template-columns: 108px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 14px !important;
+  border-radius: 18px;
+  animation: partnerPop .24s ease-out both;
+}
+
+@keyframes partnerPop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.partnerMessageImage {
+  width: 104px;
+  height: 104px;
+  object-fit: contain;
+  border-radius: 18px;
+  background: rgba(255,255,255,.14);
+  border: 2px solid rgba(255,255,255,.85);
+  box-shadow:
+    0 5px 0 rgba(0,0,0,.24),
+    0 0 16px rgba(255,255,255,.20);
+}
+
+.partnerMessageTextArea {
+  text-align: left;
+}
+
+.partnerMessageName {
+  color: var(--yellow);
+  font-size: 16px;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.partnerMessageText {
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+#partnerMessageCloseBtn {
+  grid-column: 1 / -1;
+  min-height: 48px;
+  margin-top: 6px;
+}
+
+/* 小さめスマホ調整 */
+@media (max-height: 760px) {
+  .partnerChoiceBtn {
+    min-height: 82px;
+    grid-template-columns: 64px 1fr;
+  }
+
+  .partnerChoiceImage {
+    width: 60px;
+    height: 60px;
+  }
+
+  .partnerMessageCard {
+    grid-template-columns: 86px 1fr;
+    gap: 10px;
+  }
+
+  .partnerMessageImage {
+    width: 82px;
+    height: 82px;
+  }
+
+  .partnerMessageText {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+}
   
 </style>
 </head>
@@ -3261,6 +3460,39 @@ body.title-menu-open .titleHero .titleSingle {
   </div>
 </section>
 
+  <!-- 相棒選択画面 -->
+<section id="partnerOverlay" class="hidden">
+  <div class="partnerSelectCard window">
+    <div class="partnerSelectTitle">相棒を選ぼう</div>
+    <div class="partnerSelectLead">
+      これからの冒険を、ともに歩む相棒を選んでください。
+    </div>
+
+    <div id="partnerList" class="partnerList"></div>
+  </div>
+</section>
+
+<!-- 相棒メッセージ画面 -->
+<section id="partnerMessageOverlay" class="hidden">
+  <div class="partnerMessageCard window">
+    <img
+      id="partnerMessageImage"
+      class="partnerMessageImage"
+      src=""
+      alt="相棒"
+    >
+
+    <div class="partnerMessageTextArea">
+      <div id="partnerMessageName" class="partnerMessageName"></div>
+      <div id="partnerMessageText" class="partnerMessageText"></div>
+    </div>
+
+    <button id="partnerMessageCloseBtn" class="primary titleBtn">
+      進む
+    </button>
+  </div>
+</section>
+
   <!-- 結果・履歴オーバーレイ -->
   <section id="resultOverlay" class="hidden">
     <div class="window resultCard">
@@ -3397,6 +3629,15 @@ const prologueText = $("prologueText");
 const prologueStartBtn = $("prologueStartBtn");
 const historyList = $("historyList");
 const closeOverlayBtn = $("closeOverlayBtn");
+
+const partnerOverlay = $("partnerOverlay");
+const partnerListEl = $("partnerList");
+
+const partnerMessageOverlay = $("partnerMessageOverlay");
+const partnerMessageImage = $("partnerMessageImage");
+const partnerMessageName = $("partnerMessageName");
+const partnerMessageText = $("partnerMessageText");
+const partnerMessageCloseBtn = $("partnerMessageCloseBtn");
 
 const flashLayer = $("flashLayer");
 const flashText = $("flashText");
@@ -3587,6 +3828,9 @@ function createNewPlayer() {
 
     seenQuestions: [],
     seenChallenges: []
+
+    partnerId: null,
+    partnerTalkCount: 0
   };
 }
 
@@ -4054,6 +4298,107 @@ function showPrologue() {
   });
 }
 
+function getPartnerById(id) {
+  return partnerList.find(p => p.id === id) || partnerList[0];
+}
+
+function getCurrentPartner() {
+  if (!player.partnerId) return null;
+  return getPartnerById(player.partnerId);
+}
+
+function pickPartnerLine(partner, type) {
+  const list = partner?.lines?.[type] || partner?.lines?.start || [];
+  if (!list.length) return "";
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function showPartnerSelect() {
+  return new Promise((resolve) => {
+    partnerListEl.innerHTML = partnerList.map(p => `
+      <button type="button" class="partnerChoiceBtn" data-partner-id="${p.id}">
+        <img
+          class="partnerChoiceImage"
+          src="${p.image}"
+          alt="${p.name}"
+          onerror="this.style.display='none'"
+        >
+
+        <div>
+          <div class="partnerChoiceName">${p.species} ${p.name}</div>
+          <div class="partnerChoiceCatch">${p.catch}</div>
+          <div class="partnerChoicePersonality">${p.personality}</div>
+        </div>
+      </button>
+    `).join("");
+
+    partnerOverlay.classList.remove("hidden");
+
+    const buttons = partnerListEl.querySelectorAll("[data-partner-id]");
+
+    buttons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.partnerId;
+
+        player.partnerId = id;
+        player.partnerTalkCount = 0;
+
+        sfx("select");
+        partnerOverlay.classList.add("hidden");
+
+        resolve(id);
+      });
+    });
+  });
+}
+
+function showPartnerMessage(type = "start") {
+  return new Promise((resolve) => {
+    const partner = getCurrentPartner();
+
+    if (!partner) {
+      resolve();
+      return;
+    }
+
+    const line = pickPartnerLine(partner, type);
+
+    if (!line) {
+      resolve();
+      return;
+    }
+
+    partnerMessageImage.src = partner.image;
+    partnerMessageImage.alt = partner.name;
+    partnerMessageImage.onerror = () => {
+      partnerMessageImage.style.display = "none";
+    };
+    partnerMessageImage.style.display = "block";
+
+    partnerMessageName.textContent = `${partner.species} ${partner.name}`;
+    partnerMessageText.textContent = line;
+
+    partnerMessageOverlay.classList.remove("hidden");
+
+    const finish = () => {
+      sfx("select");
+      partnerMessageOverlay.classList.add("hidden");
+      partnerMessageCloseBtn.removeEventListener("click", finish);
+      resolve();
+    };
+
+    partnerMessageCloseBtn.addEventListener("click", finish);
+  });
+}
+
+async function maybePartnerMessage(type = "correct", rate = 0.2) {
+  if (!player.partnerId) return;
+
+  if (Math.random() > rate) return;
+
+  await showPartnerMessage(type);
+}
+
 messageBox.addEventListener("click", () => {
   if (!messageResolve) return;
 
@@ -4204,6 +4549,14 @@ function loadGame(mode = "normal") {
      player.missStreak = 0;
      }
 
+    if (player.partnerId === undefined) {
+     player.partnerId = null;
+    }
+
+    if (player.partnerTalkCount === undefined) {
+     player.partnerTalkCount = 0;
+    }
+
     resetDecks();
     return true;
   } catch {
@@ -4348,6 +4701,105 @@ const titleMasterList = [
     name: "成長の証人",
     condition: p => p.level >= 20,
     desc: "レベル20に到達した"
+  }
+];
+
+/* =========================================================
+  相棒キャラクター
+========================================================= */
+
+const partnerList = [
+  {
+    id: "eagle",
+    name: "ソラ",
+    species: "若鷲",
+    catch: "希望の空へ導く相棒",
+    image: "assets/partners/partner_eagle.png",
+    personality: "明るく前向き。迷った時に背中を押してくれる。",
+    lines: {
+      start: [
+        "一緒に行こう！\n空はまだまだ広いよ！",
+        "大丈夫。\n一問ずつ羽ばたいていこう！"
+      ],
+      correct: [
+        "今の正解、いい風に乗ってたよ！",
+        "その調子！\n学びの翼が広がってる！"
+      ],
+      wrong: [
+        "大丈夫、次の空へ向かおう！",
+        "失敗しても、翼はちゃんと強くなるよ！"
+      ],
+      boss: [
+        "強い風だね……でも、越えていけるよ！",
+        "ここが勝負だよ。\n一緒に羽ばたこう！"
+      ],
+      lowHp: [
+        "無理しすぎないで。\nでも、まだ飛べるよ！",
+        "落ち着いて。\n風を読めば、きっと大丈夫！"
+      ]
+    }
+  },
+
+  {
+    id: "lion",
+    name: "レオ",
+    species: "獅子",
+    catch: "勇気を燃やす黄金の相棒",
+    image: "assets/partners/partner_lion.png",
+    personality: "堂々として熱い。ピンチの時に勇気をくれる。",
+    lines: {
+      start: [
+        "さあ、胸を張って進もう！",
+        "君の勇気、俺が見届ける！"
+      ],
+      correct: [
+        "見事だ！\nその一答、力強かったぞ！",
+        "いいぞ！\n迷いを打ち破る一撃だ！"
+      ],
+      wrong: [
+        "顔を上げろ！\n次で取り返せばいい！",
+        "負けたわけじゃない。\nまだ戦える！"
+      ],
+      boss: [
+        "強敵だな。\nだが、心まで負けるな！",
+        "ここが踏ん張りどころだ。\n行くぞ！"
+      ],
+      lowHp: [
+        "苦しい時こそ、心を燃やせ！",
+        "まだ終わりじゃない。\n立て直すぞ！"
+      ]
+    }
+  },
+
+  {
+    id: "horse",
+    name: "ヒカリ",
+    species: "白馬",
+    catch: "清らかな光で導く相棒",
+    image: "assets/partners/partner_horse.png",
+    personality: "穏やかで誠実。焦った時に心を整えてくれる。",
+    lines: {
+      start: [
+        "まっすぐ進みましょう。\nあなたの道には、光があります。",
+        "焦らなくて大丈夫。\n一歩ずつ、確かに進めばいいんです。"
+      ],
+      correct: [
+        "美しい一歩でした。\nその答えが、道を照らしています。",
+        "今の学びは、きっと力になります。"
+      ],
+      wrong: [
+        "間違えても、学びはちゃんと残っています。",
+        "大丈夫です。\n心を整えて、次の一問へ進みましょう。"
+      ],
+      boss: [
+        "強い相手ですね。\nでも、まっすぐな心は折れません。",
+        "道は必ずあります。\n落ち着いて進みましょう。"
+      ],
+      lowHp: [
+        "少し深呼吸しましょう。\nあなたの歩みは止まっていません。",
+        "光はまだ消えていません。\n次の一歩を大切に。"
+      ]
+    }
   }
 ];
 
@@ -4675,6 +5127,8 @@ async function showBossEntrance(enemy) {
   await showMessage(
     `${enemy.name}が あらわれた！\n` +
     "ここからは 少し難しい問題です。"
+
+  await showPartnerMessage("boss");
   );
 }
 
@@ -4841,6 +5295,9 @@ async function handleCorrect() {
 
   await showMessage(`${currentEnemy.name}に\n${damage}の ダメージ！`);
 
+// 正解時、たまに相棒が励ます
+  await maybePartnerMessage("correct", 0.18);
+
   if (currentEnemy.hp <= 0) {
     await defeatEnemy();
   } else {
@@ -4867,9 +5324,16 @@ async function handleWrong(index) {
     await showMessage(`ざんねん！\n正解は「${correctText}」。\n${currentQuiz.explanation}`);
   }
 
-  // 2連続ミスなら強攻撃
+// 不正解時、少し高めの確率で相棒が励ます
+  await maybePartnerMessage("wrong", 0.32);
+
+// 2連続ミスなら強攻撃
   const isPowerAttack = player.missStreak >= 2;
   await enemyAttack(isPowerAttack);
+
+if (player.hp > 0 && player.hp <= player.maxHp * 0.35) {
+  await maybePartnerMessage("lowHp", 0.45);
+}
 }
 
 async function enemyAttack(isPowerAttack = false) {
@@ -5382,22 +5846,26 @@ async function startNewGame() {
   updateUI();
 
 // 冒険開始のプロローグ画面を表示
-  await showPrologue();
+await showPrologue();
 
-  playFlash("冒険開始！", "showLevel");
+// 相棒を選ぶ
+await showPartnerSelect();
 
-  await showMessage(
-  "若鷲は 青空へ飛び立った！\n" +
+// 選んだ相棒が最初に励ましてくれる
+await showPartnerMessage("start");
+
+playFlash("冒険開始！", "showLevel");
+
+await showMessage(
   "学びの光が、迷いの道を照らしていく……"
-  );
+);
 
-  await showMessage(
+await showMessage(
   "100体の迷いを打ち破れば、\n" +
   "キョウガク・ダンジョンに希望の光が満ちる！"
-  );
+);
 
-  await spawnEnemy();
-  }
+await spawnEnemy();
 
 async function startEndlessGame() {
   initAudio();
@@ -5435,6 +5903,12 @@ async function startEndlessGame() {
   quizBox.classList.add("hidden");
 
   updateUI();
+
+// エンドレスでも相棒を選ぶ
+  await showPartnerSelect();
+
+// 選んだ相棒が励ましてくれる
+  await showPartnerMessage("start");
 
   playFlash("ENDLESS!", "showLevel");
 
