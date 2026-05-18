@@ -4550,71 +4550,98 @@ function stopAllMusic(resetTime = true) {
 
     try {
       audio.pause();
-      if (resetTime) audio.currentTime = 0;
+
+      if (resetTime) {
+        audio.currentTime = 0;
+      }
+
       audio.muted = musicMuted;
+      audio.loop = true;
     } catch (e) {}
   });
 
   currentMusic = null;
 }
 
-ensureBgmGainNode();
-setupMusicVolume();
+async function playMusic(audio, restart = false) {
+  if (!audio) return;
 
-// すでに同じBGMが流れているなら、止め直さない
-// スコア履歴・称号画面からタイトルへ戻る時のBGMリセット防止
-if (
-  currentMusic === audio &&
-  !restart &&
-  audio &&
-  !audio.paused
-) {
-  applyBgmGain();
-  return;
-}
+  initAudio();
+
+  if (audioCtx && audioCtx.state === "suspended") {
+    await audioCtx.resume().catch(() => {});
+  }
+
+  ensureBgmGainNode();
+  setupMusicVolume();
+
+  // すでに同じBGMが流れているなら、止め直さない
+  // タイトル画面・履歴画面・称号画面の行き来でBGMがリセットされるのを防ぐ
+  if (
+    currentMusic === audio &&
+    !restart &&
+    !audio.paused
+  ) {
+    applyBgmGain();
+    return;
+  }
 
   const token = ++musicToken;
 
-// まず全BGMを確実に止める
+  // 全BGMをいったん確実に止める
+  // スマホで前のBGMの冒頭だけが重なる問題への対策
   getAllMusicTracks().forEach(track => {
     if (!track) return;
 
     try {
       track.pause();
 
-      // 別の曲、または再スタート時は先頭に戻す
+      // 別の曲に切り替える時だけ、再生位置を先頭に戻す
+      // 同じ曲を継続する場合はここに来ない
       if (track !== audio || restart) {
         track.currentTime = 0;
       }
 
-      track.muted = musicMuted;
+      track.muted = true;
+      track.loop = true;
     } catch (e) {}
   });
 
-  // この再生命令が古くなっていたら中止
+  // 途中で別のBGM命令が来ていたら、この再生は中止
   if (token !== musicToken) return;
 
   currentMusic = audio;
-  audio.loop = true;
-  audio.muted = musicMuted;
-
-  if (restart) {
-    try {
-      audio.currentTime = 0;
-    } catch (e) {}
-  }
-
-  applyBgmGain();
 
   try {
+    if (restart) {
+      audio.currentTime = 0;
+    }
+
+    audio.loop = true;
+    audio.muted = musicMuted;
+
+    applyBgmGain();
+
     await audio.play();
 
-    // play() 完了後に、別のBGM命令が来ていたら止める
+    // play後に別のBGM命令が来ていたら止める
     if (token !== musicToken) {
       audio.pause();
       audio.currentTime = 0;
       return;
     }
+
+    // 念のため、再生中の曲以外はミュート解除しない
+    getAllMusicTracks().forEach(track => {
+      if (!track || track === audio) return;
+      try {
+        track.pause();
+        track.currentTime = 0;
+        track.muted = true;
+      } catch (e) {}
+    });
+
+    audio.muted = musicMuted;
   } catch (e) {
     console.log("BGMは最初のタップ後に再生されます。");
   }
@@ -6488,10 +6515,13 @@ tapStartBtn.addEventListener("click", async () => {
   }
 
   sfx("select");
-  await playTitleBgm(true);
 
+  // 先に画面を進める。BGM待ちでTAP STARTが止まるのを防ぐ
   document.body.classList.add("title-menu-open");
   titleMenu.classList.remove("hidden");
+
+  // タイトルBGMはリセットせず、流れていなければ再生
+  playTitleBgm(false);
 });
 
   volumeSlider.addEventListener("input", async () => {
@@ -6529,7 +6559,19 @@ muteBtn.addEventListener("click", async () => {
 
   document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
-    stopAllMusic(false);
+    getAllMusicTracks().forEach(audio => {
+      if (!audio) return;
+
+      try {
+        audio.pause();
+      } catch (e) {}
+    });
+    return;
+  }
+
+  // 画面に戻ってきた時、現在の曲だけ再開する
+  if (!musicMuted && currentMusic) {
+    currentMusic.play().catch(() => {});
   }
 });
 
@@ -6611,7 +6653,7 @@ closeOverlayBtn.addEventListener("click", async () => {
   document.body.classList.add("title-menu-open");
   titleMenu.classList.remove("hidden");
 
-  await playTitleBgm(false);
+  playTitleBgm(false);
   updateUI();
 });
 
@@ -6643,7 +6685,7 @@ backTitleBtn.addEventListener("click", async () => {
   document.body.classList.add("title-menu-open");
   titleMenu.classList.remove("hidden");
 
-  await playTitleBgm(false);
+  playTitleBgm(false);
   updateUI();
 });
 
