@@ -4015,7 +4015,7 @@ function createNewPlayer() {
     battleBgmIndex: -1,
 
     seenQuestions: [],
-    seenChallenges: []
+    seenChallenges: [],
 
     partnerId: null,
     partnerTalkCount: 0
@@ -5312,11 +5312,11 @@ async function showBossEntrance(enemy) {
 
   await wait(500);
 
+  await showPartnerMessage("boss");
+
   await showMessage(
     `${enemy.name}が あらわれた！\n` +
     "ここからは 少し難しい問題です。"
-
-  await showPartnerMessage("boss");
   );
 }
 
@@ -6054,6 +6054,7 @@ await showMessage(
 );
 
 await spawnEnemy();
+}
 
 async function startEndlessGame() {
   initAudio();
@@ -6072,13 +6073,7 @@ async function startEndlessGame() {
   player = createNewPlayer();
 
   player.mode = "endless";
-
-  // 今は3ミス終了ルールを使わないため、記録だけ初期化しておく
   player.missLimit = null;
-  player.endlessMisses = 0;
-
-  player.mode = "endless";
-  player.missLimit = 3;
   player.endlessMisses = 0;
 
   player.battleBgmIndex = pickRandomBattleBgmIndex();
