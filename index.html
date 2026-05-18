@@ -5411,7 +5411,7 @@ async function spawnEnemy() {
   if (currentEnemy.boss) {
     await showBossEntrance(currentEnemy);
   } else {
-    await playBattleBgm();
+    playBattleBgm();
     await showMessage(`${currentEnemy.name}が あらわれた！`);
   }
 
