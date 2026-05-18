@@ -3092,9 +3092,8 @@ body.title-menu-open .titleHero .titleSingle {
   }
 }
 
-
 /* =========================================================
-  相棒選択画面
+  相棒選択画面：大きいプレビュー型
 ========================================================= */
 
 #partnerOverlay {
@@ -3104,7 +3103,7 @@ body.title-menu-open .titleHero .titleSingle {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 14px;
   background:
     radial-gradient(circle at 50% 18%, rgba(255,255,255,.55), transparent 24%),
     linear-gradient(180deg, rgba(70,190,255,.94), rgba(20,70,180,.96));
@@ -3118,7 +3117,7 @@ body.title-menu-open .titleHero .titleSingle {
   width: 100%;
   max-width: 430px;
   text-align: center;
-  padding: 16px 14px 18px !important;
+  padding: 14px 14px 16px !important;
   border-radius: 20px;
 }
 
@@ -3127,131 +3126,160 @@ body.title-menu-open .titleHero .titleSingle {
   font-size: 24px;
   font-weight: 900;
   letter-spacing: 2px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   text-shadow:
     0 0 10px rgba(255,255,255,.70),
     2px 2px 0 rgba(0,0,0,.55);
 }
 
 .partnerSelectLead {
-  font-size: 13px;
-  line-height: 1.6;
-  margin-bottom: 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin-bottom: 10px;
 }
 
-/* 三角形レイアウト */
-.partnerList {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  align-items: start;
-}
-
-/* 上のソラだけ中央に大きく置く */
-.partnerChoiceBtnTop {
-  grid-column: 1 / -1;
-  width: min(250px, 100%);
-  justify-self: center;
-}
-
-/* カード全体 */
-.partnerChoiceBtn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: center;
-  gap: 8px;
-  min-height: 0;
-  padding: 12px 10px 14px;
+.partnerPreviewBox {
+  margin: 0 auto 12px;
+  padding: 10px 10px 12px;
   border-radius: 20px;
-}
-
-/* 画像を大きく見せる */
-.partnerChoiceImageWrap {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.partnerChoiceImage {
-  width: min(100%, 122px);
-  aspect-ratio: 1 / 1;
-  height: auto;
-  object-fit: cover;
-  border-radius: 18px;
-  background: rgba(255,255,255,.12);
-  border: 2px solid rgba(255,255,255,.82);
+  background:
+    radial-gradient(circle at 50% 25%, rgba(255,255,255,.18), transparent 38%),
+    rgba(5, 24, 130, .34);
+  border: 2px solid rgba(255,255,255,.55);
   box-shadow:
-    0 4px 0 rgba(0,0,0,.22),
-    0 0 14px rgba(255,255,255,.18);
+    inset 0 0 14px rgba(255,255,255,.08),
+    0 4px 0 rgba(0,0,0,.16);
 }
 
-/* 上のソラは少し大きめ */
-.partnerChoiceBtnTop .partnerChoiceImage {
-  width: min(100%, 152px);
+.partnerPreviewImage {
+  width: min(58vw, 220px);
+  height: min(58vw, 220px);
+  object-fit: cover;
+  border-radius: 24px;
+  border: 3px solid rgba(255,255,255,.9);
+  box-shadow:
+    0 8px 0 rgba(0,0,0,.20),
+    0 0 18px rgba(255,255,255,.18);
+  background: rgba(255,255,255,.12);
 }
 
-.partnerChoiceText {
-  width: 100%;
-}
-
-.partnerChoiceName {
+.partnerPreviewName {
+  margin-top: 9px;
   color: var(--yellow);
-  font-size: 17px;
+  font-size: 22px;
   font-weight: 900;
-  line-height: 1.2;
-  margin-bottom: 4px;
+  line-height: 1.15;
   text-shadow:
-    1px 1px 0 rgba(0,0,0,.55);
+    0 0 8px rgba(255,255,255,.35),
+    2px 2px 0 rgba(0,0,0,.55);
 }
 
-.partnerChoiceCatch {
-  font-size: 11px;
-  line-height: 1.45;
-  opacity: .95;
-}
-
-.partnerChoicePersonality {
-  font-size: 10.5px;
-  line-height: 1.45;
-  opacity: .88;
+.partnerPreviewCatch {
   margin-top: 4px;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.35;
 }
 
-@media (max-width: 390px) {
+.partnerPreviewDesc {
+  margin-top: 5px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  opacity: .92;
+}
+
+.partnerThumbList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.partnerThumbBtn {
+  min-height: 58px;
+  padding: 7px 4px;
+  border-radius: 16px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.partnerThumbBtn.is-active {
+  box-shadow:
+    0 0 0 3px rgba(255,230,109,.78),
+    0 0 14px rgba(255,230,109,.32),
+    0 4px 0 rgba(0,0,0,.20);
+}
+
+.partnerThumbMiniImage {
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,.78);
+  display: block;
+  margin: 0 auto 4px;
+}
+
+.partnerConfirmBtn {
+  margin-top: 11px;
+  width: 100%;
+  min-height: 50px;
+}
+
+@media (max-height: 760px) {
   .partnerSelectCard {
-    padding: 14px 12px 16px !important;
+    padding: 11px 12px 13px !important;
   }
 
-  .partnerList {
-    gap: 10px;
+  .partnerSelectTitle {
+    font-size: 21px;
+    margin-bottom: 4px;
   }
 
-  .partnerChoiceBtn {
-    padding: 10px 8px 12px;
+  .partnerSelectLead {
+    font-size: 11.5px;
+    margin-bottom: 8px;
   }
 
-  .partnerChoiceImage {
-    width: min(100%, 108px);
+  .partnerPreviewBox {
+    padding: 8px 8px 10px;
+    margin-bottom: 9px;
   }
 
-  .partnerChoiceBtnTop .partnerChoiceImage {
-    width: min(100%, 136px);
+  .partnerPreviewImage {
+    width: min(50vw, 180px);
+    height: min(50vw, 180px);
   }
 
-  .partnerChoiceName {
-    font-size: 15px;
+  .partnerPreviewName {
+    font-size: 19px;
+    margin-top: 7px;
   }
 
-  .partnerChoiceCatch {
+  .partnerPreviewCatch {
+    font-size: 12px;
+  }
+
+  .partnerPreviewDesc {
+    font-size: 10.5px;
+  }
+
+  .partnerThumbBtn {
+    min-height: 52px;
     font-size: 10px;
   }
 
-  .partnerChoicePersonality {
-    font-size: 9.8px;
+  .partnerThumbMiniImage {
+    width: 32px;
+    height: 32px;
+  }
+
+  .partnerConfirmBtn {
+    min-height: 46px;
   }
 }
+
 
 /* =========================================================
   相棒メッセージ画面
@@ -3535,6 +3563,150 @@ body.title-menu-open .titleHero .titleSingle {
     line-height: 1.6;
   }
 }
+
+/* =========================================================
+  タイトル画面：ロゴ下キャッチコピー表示 最終調整
+========================================================= */
+
+.titleHero {
+  overflow: hidden !important;
+  padding-bottom: 18px !important;
+}
+
+.titleHero .titleMain {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 6px auto 8px !important;
+  padding: 0 8px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  transform: none !important;
+}
+
+.titleHero .titleSingle {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  font-size: clamp(20px, 5.1vw, 30px) !important;
+  line-height: 1.05 !important;
+  letter-spacing: 0 !important;
+  transform: none !important;
+}
+
+.titleHero .titleCatch {
+  display: block !important;
+  position: relative !important;
+  z-index: 3 !important;
+  margin: 12px auto 0 !important;
+  padding: 0 10px !important;
+  max-width: 94% !important;
+  text-align: center !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  font-size: clamp(12px, 3.2vw, 16px) !important;
+  line-height: 1.45 !important;
+  transform: none !important;
+}
+
+body.title-menu-open .titleHero .titleSingle {
+  font-size: clamp(18px, 4.8vw, 27px) !important;
+}
+
+body.title-menu-open .titleHero .titleCatch {
+  font-size: clamp(11px, 3vw, 14px) !important;
+  margin-top: 10px !important;
+}
+
+@media (max-height: 760px) {
+  .titleHero {
+    padding-top: 14px !important;
+    padding-bottom: 16px !important;
+  }
+
+  .titleHero .titleSingle {
+    font-size: clamp(17px, 4.5vw, 25px) !important;
+  }
+
+  .titleHero .titleCatch {
+    font-size: clamp(10.5px, 2.8vw, 13px) !important;
+    line-height: 1.35 !important;
+    margin-top: 8px !important;
+  }
+}
+
+/* =========================================================
+  相棒ひとこと：冒険開始時だけ大きく表示
+========================================================= */
+
+#partnerMessageOverlay.partner-opening .partnerPopCard {
+  width: 100%;
+  max-width: 430px;
+  padding: 18px 16px 18px !important;
+}
+
+#partnerMessageOverlay.partner-opening .partnerPopBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+#partnerMessageOverlay.partner-opening .partnerPopImage {
+  width: min(62vw, 240px);
+  height: min(62vw, 240px);
+  border-radius: 28px;
+  padding: 8px;
+  box-shadow:
+    0 10px 0 rgba(0,0,0,.22),
+    0 0 24px rgba(255,255,255,.22);
+}
+
+#partnerMessageOverlay.partner-opening .partnerPopName {
+  text-align: center;
+  font-size: clamp(24px, 6vw, 34px);
+  margin-bottom: 10px;
+}
+
+#partnerMessageOverlay.partner-opening .partnerSpeechBubble {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  padding: 14px 16px;
+}
+
+#partnerMessageOverlay.partner-opening .partnerSpeechBubble::before {
+  display: none;
+}
+
+#partnerMessageOverlay.partner-opening .partnerPopText {
+  font-size: clamp(15px, 4.2vw, 20px);
+  line-height: 1.65;
+  font-weight: 900;
+}
+
+#partnerMessageOverlay.partner-opening .partnerPopBtn {
+  min-height: 54px;
+  font-size: clamp(18px, 4.8vw, 24px);
+}
+
+@media (max-height: 760px) {
+  #partnerMessageOverlay.partner-opening .partnerPopImage {
+    width: min(52vw, 190px);
+    height: min(52vw, 190px);
+  }
+
+  #partnerMessageOverlay.partner-opening .partnerPopText {
+    font-size: clamp(13px, 3.7vw, 17px);
+    line-height: 1.55;
+  }
+}
   
 </style>
 </head>
@@ -3705,7 +3877,7 @@ body.title-menu-open .titleHero .titleSingle {
   </div>
 </section>
 
-  <!-- 相棒選択画面 -->
+<!-- 相棒選択画面 -->
 <section id="partnerOverlay" class="hidden">
   <div class="partnerSelectCard window">
     <div class="partnerSelectTitle">相棒を選ぼう</div>
@@ -3713,7 +3885,24 @@ body.title-menu-open .titleHero .titleSingle {
       これからの冒険を、ともに歩む相棒を選んでください。
     </div>
 
-    <div id="partnerList" class="partnerList"></div>
+    <div class="partnerPreviewBox">
+      <img
+        id="partnerPreviewImage"
+        class="partnerPreviewImage"
+        src=""
+        alt="相棒プレビュー"
+      >
+
+      <div id="partnerPreviewName" class="partnerPreviewName"></div>
+      <div id="partnerPreviewCatch" class="partnerPreviewCatch"></div>
+      <div id="partnerPreviewDesc" class="partnerPreviewDesc"></div>
+    </div>
+
+    <div id="partnerList" class="partnerThumbList"></div>
+
+    <button id="partnerConfirmBtn" class="primary titleBtn partnerConfirmBtn">
+      この相棒にする
+    </button>
   </div>
 </section>
 
@@ -3888,6 +4077,12 @@ const closeOverlayBtn = $("closeOverlayBtn");
 
 const partnerOverlay = $("partnerOverlay");
 const partnerListEl = $("partnerList");
+
+const partnerPreviewImage = $("partnerPreviewImage");
+const partnerPreviewName = $("partnerPreviewName");
+const partnerPreviewCatch = $("partnerPreviewCatch");
+const partnerPreviewDesc = $("partnerPreviewDesc");
+const partnerConfirmBtn = $("partnerConfirmBtn");
 
 const partnerMessageOverlay = $("partnerMessageOverlay");
 const partnerMessageImage = $("partnerMessageImage");
@@ -4579,50 +4774,67 @@ function pickPartnerLine(partner, type) {
 
 function showPartnerSelect() {
   return new Promise((resolve) => {
+    let selectedPartnerId = partnerList[0]?.id || "eagle";
+
+    function updatePartnerPreview(id) {
+      const partner = getPartnerById(id);
+      selectedPartnerId = partner.id;
+
+      partnerPreviewImage.src = partner.image;
+      partnerPreviewImage.alt = `${partner.species} ${partner.name}`;
+      partnerPreviewImage.onerror = () => {
+        partnerPreviewImage.style.display = "none";
+      };
+      partnerPreviewImage.style.display = "inline-block";
+
+      partnerPreviewName.textContent = `${partner.species} ${partner.name}`;
+      partnerPreviewCatch.textContent = partner.catch;
+      partnerPreviewDesc.textContent = partner.personality;
+
+      partnerListEl.querySelectorAll("[data-partner-id]").forEach(btn => {
+        btn.classList.toggle("is-active", btn.dataset.partnerId === selectedPartnerId);
+      });
+    }
+
     partnerListEl.innerHTML = partnerList.map(p => `
       <button
         type="button"
-        class="partnerChoiceBtn ${p.id === "sora" ? "partnerChoiceBtnTop" : ""}"
+        class="partnerThumbBtn ${p.id === selectedPartnerId ? "is-active" : ""}"
         data-partner-id="${p.id}"
       >
-        <div class="partnerChoiceImageWrap">
-          <img
-            class="partnerChoiceImage"
-            src="${p.image}"
-            alt="${p.name}"
-            onerror="this.style.display='none'"
-          >
-        </div>
-
-        <div class="partnerChoiceText">
-          <div class="partnerChoiceName">${p.species} ${p.name}</div>
-          <div class="partnerChoiceCatch">${p.catch}</div>
-          <div class="partnerChoicePersonality">${p.personality}</div>
-        </div>
+        <img
+          class="partnerThumbMiniImage"
+          src="${p.image}"
+          alt="${p.name}"
+          onerror="this.style.display='none'"
+        >
+        ${p.species}<br>${p.name}
       </button>
     `).join("");
 
     partnerOverlay.classList.remove("hidden");
+    updatePartnerPreview(selectedPartnerId);
 
-    const buttons = partnerListEl.querySelectorAll("[data-partner-id]");
-
-    buttons.forEach(btn => {
+    partnerListEl.querySelectorAll("[data-partner-id]").forEach(btn => {
       btn.addEventListener("click", () => {
-        const id = btn.dataset.partnerId;
-
-        player.partnerId = id;
-        player.partnerTalkCount = 0;
-
         sfx("select");
-        partnerOverlay.classList.add("hidden");
-
-        resolve(id);
+        updatePartnerPreview(btn.dataset.partnerId);
       });
     });
+
+    partnerConfirmBtn.onclick = () => {
+      player.partnerId = selectedPartnerId;
+      player.partnerTalkCount = 0;
+
+      sfx("select");
+      partnerOverlay.classList.add("hidden");
+
+      resolve(selectedPartnerId);
+    };
   });
 }
 
-function showPartnerMessage(type = "start") {
+function showPartnerMessage(type = "start", options = {}) {
   return new Promise((resolve) => {
     const partner = getCurrentPartner();
 
@@ -4632,28 +4844,30 @@ function showPartnerMessage(type = "start") {
     }
 
     const line = pickPartnerLine(partner, type);
+    const isOpening = !!options.opening;
 
-    if (!line) {
-      resolve();
-      return;
-    }
+    partnerMessageOverlay.classList.toggle("partner-opening", isOpening);
 
     partnerMessageImage.src = partner.image;
     partnerMessageImage.alt = partner.name;
+    partnerMessageImage.style.display = "block";
+
     partnerMessageImage.onerror = () => {
       partnerMessageImage.style.display = "none";
     };
-    partnerMessageImage.style.display = "block";
 
     partnerMessageName.textContent = `${partner.species} ${partner.name}`;
-    partnerMessageText.textContent = line;
+    partnerMessageText.textContent = line || "一緒にがんばろう！";
+
+    partnerMessageCloseBtn.textContent = isOpening ? "前進する！" : "進む";
 
     partnerMessageOverlay.classList.remove("hidden");
 
     const finish = () => {
       sfx("select");
-      partnerMessageOverlay.classList.add("hidden");
       partnerMessageCloseBtn.removeEventListener("click", finish);
+      partnerMessageOverlay.classList.add("hidden");
+      partnerMessageOverlay.classList.remove("partner-opening");
       resolve();
     };
 
@@ -6121,8 +6335,7 @@ await showPrologue();
 // 相棒を選ぶ
 await showPartnerSelect();
 
-// 選んだ相棒が最初に励ましてくれる
-await showPartnerMessage("start");
+await showPartnerMessage("start", { opening: true });
 
 playFlash("冒険開始！", "showLevel");
 
@@ -6173,7 +6386,7 @@ async function startEndlessGame() {
   await showPartnerSelect();
 
 // 選んだ相棒が励ましてくれる
-  await showPartnerMessage("start");
+  await showPartnerMessage("start", { opening: true });
 
   playFlash("ENDLESS!", "showLevel");
 
