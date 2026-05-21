@@ -4396,11 +4396,34 @@ function sfx(type) {
   外部音源BGM処理
 ========================================================= */
 
-let currentMusic = null;
-let musicToken = 0;
-let bgmGainNode = null;
-const bgmSourceMap = new WeakMap();
-let musicTransitionPromise = Promise.resolve();
+/* =========================================================
+  外部音源BGM処理：スマホ重なり対策版
+  BGM用audioを1個だけ使う
+========================================================= */
+
+const BGM_SRC = {
+  title: "assets/audio/title.mp3",
+  clear: "assets/audio/clear.mp3",
+
+  battle: [
+    "assets/audio/battle_01.mp3",
+    "assets/audio/battle_02.mp3",
+    "assets/audio/battle_03.mp3",
+    "assets/audio/battle_04.mp3",
+    "assets/audio/battle_05.mp3",
+    "assets/audio/battle_06.mp3",
+    "assets/audio/battle_07.mp3",
+    "assets/audio/battle_08.mp3",
+    "assets/audio/battle_09.mp3",
+    "assets/audio/battle_10.mp3"
+  ],
+
+  boss: [
+    "assets/audio/boss_01.mp3",
+    "assets/audio/boss_02.mp3",
+    "assets/audio/boss_03.mp3"
+  ]
+};
 
 const VOLUME_KEY = "kq_volume_v1";
 const MUTE_KEY = "kq_mute_v1";
@@ -4408,12 +4431,23 @@ const MUTE_KEY = "kq_mute_v1";
 let masterVolume = Number(localStorage.getItem(VOLUME_KEY) || "22");
 let musicMuted = localStorage.getItem(MUTE_KEY) === "1";
 
-// BGMは0〜0.35くらいに抑える。SEはtone側で別途反映。
-let musicVolume = musicMuted ? 0 : masterVolume / 100 * 0.35;
+// SE用。tone() 側で使用
 let sfxVolumeRate = musicMuted ? 0 : masterVolume / 100;
 
-function getBattleBgmList() {
+// BGM専用プレイヤー。BGMはこれ1個だけで鳴らす
+const bgmPlayer = new Audio();
+bgmPlayer.loop = true;
+bgmPlayer.preload = "auto";
+bgmPlayer.playsInline = true;
+
+let currentBgmSrc = "";
+let bgmSwitchToken = 0;
+let bossBgmIndex = -1;
+
+function getAllMusicTracks() {
+  // 旧audioタグを完全に止めるためだけに使う
   return [
+    titleBgm,
     battleBgm1,
     battleBgm2,
     battleBgm3,
@@ -4423,73 +4457,24 @@ function getBattleBgmList() {
     battleBgm7,
     battleBgm8,
     battleBgm9,
-    battleBgm10
-  ];
-}
-
-function getAllMusicTracks() {
-  return [
-    titleBgm,
-    ...getBattleBgmList(),
-    ...getBossBgmList(),
+    battleBgm10,
+    bossBgm1,
+    bossBgm2,
+    bossBgm3,
     clearBgm
-  ];
+  ].filter(Boolean);
 }
 
-function pickRandomBattleBgmIndex() {
-  const list = getBattleBgmList();
-
-  if (list.length <= 1) return 0;
-
-  let nextIndex = Math.floor(Math.random() * list.length);
-
-  // 同じ曲が連続しないようにする
-  while (nextIndex === player.battleBgmIndex) {
-    nextIndex = Math.floor(Math.random() * list.length);
-  }
-
-  return nextIndex;
-}
-
-function getCurrentBattleBgm() {
-  const list = getBattleBgmList();
-
-  if (player.battleBgmIndex === undefined || player.battleBgmIndex < 0) {
-    player.battleBgmIndex = pickRandomBattleBgmIndex();
-  }
-
-  return list[player.battleBgmIndex] || list[0];
-}
-
-async function changeBattleBgmRandomly() {
-  player.battleBgmIndex = pickRandomBattleBgmIndex();
-  await playBattleBgm(true);
-}
-
-async function playBattleBgm(restart = false) {
-  await playMusic(getCurrentBattleBgm(), restart);
-}
-
-function setupMusicVolume() {
+function silenceLegacyAudioTags() {
+  // 既存の <audio> タグが誤って鳴るのを防ぐ
   getAllMusicTracks().forEach(audio => {
-    if (!audio) return;
-
-    // PC向け。iPhoneでは効かないことがあるが、残しておいてOK
-    audio.volume = 1;
-
-    // ミュートはスマホでも比較的効きやすい
-    audio.muted = musicMuted;
-
-    // 念のためJS側でもループ指定
-    audio.loop = true;
-
-    // まれに再生レートが変化して半音ズレする端末向けの保険
-    audio.playbackRate = 1;
-    if ("preservesPitch" in audio) audio.preservesPitch = true;
-    if ("webkitPreservesPitch" in audio) audio.webkitPreservesPitch = true;
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.muted = true;
+      audio.volume = 0;
+    } catch (e) {}
   });
-
-  applyBgmGain();
 }
 
 function applyVolumeUI() {
@@ -4500,6 +4485,20 @@ function applyVolumeUI() {
   muteBtn.textContent = musicMuted ? "音OFF" : "音ON";
 }
 
+function applyBgmGain() {
+  // SE音量
+  sfxVolumeRate = musicMuted ? 0 : masterVolume / 100;
+
+  // BGM音量。BGMは控えめ
+  const bgmVolume = musicMuted ? 0 : masterVolume / 100 * 0.35;
+
+  bgmPlayer.volume = bgmVolume;
+  bgmPlayer.muted = musicMuted;
+
+  // 旧audioは絶対に鳴らさない
+  silenceLegacyAudioTags();
+}
+
 function updateMasterVolume(value) {
   masterVolume = Number(value);
   localStorage.setItem(VOLUME_KEY, String(masterVolume));
@@ -4508,255 +4507,48 @@ function updateMasterVolume(value) {
   applyVolumeUI();
 }
 
-function ensureBgmGainNode() {
-  initAudio();
-
-  if (!audioCtx || audioCtx.state !== "running") return;
-
-  if (!bgmGainNode) {
-    bgmGainNode = audioCtx.createGain();
-    bgmGainNode.connect(audioCtx.destination);
-  }
-
-  getAllMusicTracks().forEach(audio => {
-    if (!audio) return;
-    if (bgmSourceMap.has(audio)) return;
-
-    try {
-      const source = audioCtx.createMediaElementSource(audio);
-      source.connect(bgmGainNode);
-      bgmSourceMap.set(audio, source);
-    } catch (e) {
-      // 同じaudio要素にMediaElementSourceを二重作成するとエラーになるため無視
-      console.log("BGM接続はすでに設定済みです。");
-    }
-  });
-
-  applyBgmGain();
-}
-
-function applyBgmGain() {
-  musicVolume = musicMuted ? 0 : masterVolume / 100 * 0.35;
-  sfxVolumeRate = musicMuted ? 0 : masterVolume / 100;
-
-  if (bgmGainNode && audioCtx) {
-    bgmGainNode.gain.setTargetAtTime(
-      musicVolume,
-      audioCtx.currentTime,
-      0.03
-    );
-  }
-
-  getAllMusicTracks().forEach(audio => {
-    if (!audio) return;
-    audio.muted = musicMuted;
-    audio.loop = true;
-  });
-}
-
 function toggleMute() {
   musicMuted = !musicMuted;
   localStorage.setItem(MUTE_KEY, musicMuted ? "1" : "0");
 
   applyBgmGain();
-
-  // スマホでは muted の方が効きやすい
-  getAllMusicTracks().forEach(audio => {
-    if (!audio) return;
-    audio.muted = musicMuted;
-  });
-
   applyVolumeUI();
-}
 
-function stopAllMusic(resetTime = true) {
-  musicToken++;
-
-  getAllMusicTracks().forEach(audio => {
-    if (!audio) return;
-
-    try {
-      audio.pause();
-
-      if (resetTime) {
-        audio.currentTime = 0;
-      }
-
-      audio.muted = musicMuted;
-      audio.loop = true;
-      audio.playbackRate = 1;
-      if ("preservesPitch" in audio) audio.preservesPitch = true;
-      if ("webkitPreservesPitch" in audio) audio.webkitPreservesPitch = true;
-    } catch (e) {}
-  });
-
-  currentMusic = null;
-}
-
-async function fadeOutAndStopTrack(audio, durationMs = 220) {
-  if (!audio) return;
-
-  // すでに停止済みなら何もしない
-  if (audio.paused) {
-    try {
-      audio.currentTime = 0;
-      audio.muted = true;
-    } catch (e) {}
-    return;
-  }
-
-  const startVolume = Number.isFinite(audio.volume) ? audio.volume : 1;
-  const steps = 8;
-  const stepMs = Math.max(10, Math.floor(durationMs / steps));
-
-  for (let i = 1; i <= steps; i++) {
-    const ratio = 1 - i / steps;
-    try {
-      audio.volume = Math.max(0, startVolume * ratio);
-    } catch (e) {}
-    await wait(stepMs);
-  }
-
-  try {
-    audio.pause();
-    audio.currentTime = 0;
-    audio.muted = true;
-    audio.volume = 1;
-  } catch (e) {}
-}
-
-async function playMusic(audio, restart = false) {
-  if (!audio) return;
-
-  initAudio();
-
-  if (audioCtx && audioCtx.state === "suspended") {
-    await audioCtx.resume().catch(() => {});
-  }
-
-  ensureBgmGainNode();
-  setupMusicVolume();
-
-  // すでに同じBGMが流れているなら、止め直さない
-  // タイトル画面・履歴画面・称号画面の行き来でBGMがリセットされるのを防ぐ
-  if (
-    currentMusic === audio &&
-    !restart &&
-    !audio.paused
-  ) {
-    applyBgmGain();
-    return;
-  }
-
-  const token = ++musicToken;
-
-  // 連打や連続遷移でもBGM切替を直列化し、二重再生を防ぐ
-  const previousTransition = musicTransitionPromise;
-  let releaseTransition;
-  musicTransitionPromise = new Promise(resolve => {
-    releaseTransition = resolve;
-  });
-  await previousTransition;
-
-  // いま鳴っている曲は短くフェードアウトしてから停止
-  if (currentMusic && currentMusic !== audio) {
-    await fadeOutAndStopTrack(currentMusic, 220);
-  }
-
-  // 全BGMをいったん確実に止める（残留再生対策）
-  getAllMusicTracks().forEach(track => {
-    if (!track) return;
-    try {
-      track.pause();
-      if (track !== audio || restart) {
-        track.currentTime = 0;
-      }
-      track.muted = true;
-      track.loop = true;
-      track.playbackRate = 1;
-      if ("preservesPitch" in track) track.preservesPitch = true;
-      if ("webkitPreservesPitch" in track) track.webkitPreservesPitch = true;
-    } catch (e) {}
-  });
-
-  // 途中で別のBGM命令が来ていたら、この再生は中止
-  if (token !== musicToken) {
-    releaseTransition();
-    return;
-  }
-
-  currentMusic = audio;
-
-  try {
-    if (restart) {
-      audio.currentTime = 0;
-    }
-
-    audio.loop = true;
-    audio.muted = musicMuted;
-    audio.playbackRate = 1;
-    if ("preservesPitch" in audio) audio.preservesPitch = true;
-    if ("webkitPreservesPitch" in audio) audio.webkitPreservesPitch = true;
-
-    applyBgmGain();
-
-    await audio.play();
-
-    // play後に別のBGM命令が来ていたら止める
-    if (token !== musicToken) {
-      audio.pause();
-      audio.currentTime = 0;
-      return;
-    }
-
-    // 念のため、再生中の曲以外はミュート解除しない
-    getAllMusicTracks().forEach(track => {
-      if (!track || track === audio) return;
-      try {
-        track.pause();
-        track.currentTime = 0;
-        track.muted = true;
-      } catch (e) {}
-    });
-
-    audio.muted = musicMuted;
-  } catch (e) {
-    console.log("BGMは最初のタップ後に再生されます。");
-  } finally {
-    releaseTransition();
+  // ミュート解除時、現在のBGMがあれば再開
+  if (!musicMuted && currentBgmSrc && bgmPlayer.paused) {
+    bgmPlayer.play().catch(() => {});
   }
 }
 
-async function playTitleBgm(restart = false) {
-  await playMusic(titleBgm, restart);
-}
-
-async function playBossBgm() {
-  await playMusic(getRandomBossBgm(), true);
-}
-
-async function playClearBgm() {
-  await playMusic(clearBgm, true);
-}
-
-  let bossBgmIndex = -1;
-
-function getBossBgmList() {
-  return [
-    bossBgm1,
-    bossBgm2,
-    bossBgm3
-  ];
-}
-
-function pickRandomBossBgmIndex() {
-  const list = getBossBgmList();
+function pickRandomBattleBgmIndex() {
+  const list = BGM_SRC.battle;
 
   if (list.length <= 1) return 0;
 
   let nextIndex = Math.floor(Math.random() * list.length);
 
-  // 同じボスBGMが連続しないようにする
+  while (nextIndex === player.battleBgmIndex) {
+    nextIndex = Math.floor(Math.random() * list.length);
+  }
+
+  return nextIndex;
+}
+
+function getCurrentBattleBgmSrc() {
+  if (player.battleBgmIndex === undefined || player.battleBgmIndex < 0) {
+    player.battleBgmIndex = pickRandomBattleBgmIndex();
+  }
+
+  return BGM_SRC.battle[player.battleBgmIndex] || BGM_SRC.battle[0];
+}
+
+function pickRandomBossBgmIndex() {
+  const list = BGM_SRC.boss;
+
+  if (list.length <= 1) return 0;
+
+  let nextIndex = Math.floor(Math.random() * list.length);
+
   while (nextIndex === bossBgmIndex) {
     nextIndex = Math.floor(Math.random() * list.length);
   }
@@ -4765,10 +4557,134 @@ function pickRandomBossBgmIndex() {
   return nextIndex;
 }
 
-function getRandomBossBgm() {
-  const list = getBossBgmList();
+function getRandomBossBgmSrc() {
   const index = pickRandomBossBgmIndex();
-  return list[index] || list[0];
+  return BGM_SRC.boss[index] || BGM_SRC.boss[0];
+}
+
+async function hardStopBgmForSwitch() {
+  try {
+    // 先に完全ミュート
+    bgmPlayer.muted = true;
+    bgmPlayer.volume = 0;
+
+    // 停止
+    bgmPlayer.pause();
+
+    // iPhone Safari対策：停止命令の反映を少し待つ
+    await wait(80);
+  } catch (e) {}
+}
+
+async function playBgmBySrc(src, options = {}) {
+  if (!src) return;
+
+  const restart = !!options.restart;
+  const token = ++bgmSwitchToken;
+
+  initAudio();
+
+  if (audioCtx && audioCtx.state === "suspended") {
+    await audioCtx.resume().catch(() => {});
+  }
+
+  // 旧audioタグは常に黙らせる
+  silenceLegacyAudioTags();
+
+  // 同じBGMがすでに流れているなら、止め直さない
+  if (
+    currentBgmSrc === src &&
+    !restart &&
+    !bgmPlayer.paused
+  ) {
+    applyBgmGain();
+    return;
+  }
+
+  // 旧BGMを完全に黙らせてから切り替える
+  await hardStopBgmForSwitch();
+
+  if (token !== bgmSwitchToken) return;
+
+  currentBgmSrc = src;
+
+  const absoluteSrc = new URL(src, location.href).href;
+
+  if (bgmPlayer.src !== absoluteSrc) {
+    bgmPlayer.src = src;
+    bgmPlayer.load();
+  }
+
+  try {
+    bgmPlayer.currentTime = 0;
+  } catch (e) {}
+
+  bgmPlayer.loop = true;
+  applyBgmGain();
+
+  if (token !== bgmSwitchToken) return;
+
+  try {
+    await bgmPlayer.play();
+  } catch (e) {
+    console.log("BGMはユーザー操作後に再生されます。");
+  }
+
+  // 再生完了後、古い命令なら止める
+  if (token !== bgmSwitchToken) {
+    try {
+      bgmPlayer.pause();
+      bgmPlayer.currentTime = 0;
+    } catch (e) {}
+  }
+}
+
+function pauseBgmKeepPosition() {
+  try {
+    bgmPlayer.pause();
+  } catch (e) {}
+}
+
+function stopBgm(resetTime = true) {
+  bgmSwitchToken++;
+
+  try {
+    bgmPlayer.muted = true;
+    bgmPlayer.volume = 0;
+    bgmPlayer.pause();
+
+    if (resetTime) {
+      bgmPlayer.currentTime = 0;
+      currentBgmSrc = "";
+    }
+  } catch (e) {}
+
+  silenceLegacyAudioTags();
+}
+
+function stopAllMusic(resetTime = true) {
+  stopBgm(resetTime);
+}
+
+async function playTitleBgm(restart = false) {
+  await playBgmBySrc(BGM_SRC.title, { restart });
+}
+
+async function playBattleBgm(restart = false) {
+  await playBgmBySrc(getCurrentBattleBgmSrc(), { restart });
+}
+
+async function changeBattleBgmRandomly() {
+  player.battleBgmIndex = pickRandomBattleBgmIndex();
+  await playBattleBgm(true);
+}
+
+async function playBossBgm() {
+  await playBgmBySrc(getRandomBossBgmSrc(), { restart: true });
+}
+
+async function playClearBgm() {
+  await playBgmBySrc(BGM_SRC.clear, { restart: true });
 }
 
 /* =========================================================
@@ -6622,36 +6538,40 @@ muteBtn.addEventListener("click", async () => {
     await audioCtx.resume().catch(() => {});
   }
 
-  ensureBgmGainNode();
   toggleMute();
 
-  if (!musicMuted) {
-  sfx("select");
-
-  // タイトル画面ならタイトルBGMを再開
-  if (!titleScreen.classList.contains("hidden")) {
-    await playTitleBgm();
-  } else if (currentMusic) {
-    await playMusic(currentMusic);
-  }
- }
-});
-
-  document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    getAllMusicTracks().forEach(audio => {
-      if (!audio) return;
-
-      try {
-        audio.pause();
-      } catch (e) {}
-    });
+  // 音OFFにした時は、ここで終了
+  if (musicMuted) {
     return;
   }
 
-  // 画面に戻ってきた時、現在の曲だけ再開する
-  if (!musicMuted && currentMusic) {
-    currentMusic.play().catch(() => {});
+  // 音ONに戻した時だけSE
+  sfx("select");
+
+  // 現在のBGMがあるなら、そのまま再開
+  if (currentBgmSrc) {
+    applyBgmGain();
+    bgmPlayer.play().catch(() => {});
+    return;
+  }
+
+  // まだBGMが決まっていない状態でタイトル画面なら、タイトルBGMを流す
+  if (!titleScreen.classList.contains("hidden")) {
+    playTitleBgm(false);
+  }
+});
+
+ document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    // 画面が裏に回った時は、BGM専用プレイヤーだけ一時停止する
+    pauseBgmKeepPosition();
+    return;
+  }
+
+  // 画面に戻った時、現在のBGMだけを再開する
+  if (!musicMuted && currentBgmSrc) {
+    applyBgmGain();
+    bgmPlayer.play().catch(() => {});
   }
 });
 
