@@ -3569,7 +3569,7 @@ body.title-menu-open .titleHero .titleSingle {
 ========================================================= */
 
 .titleHero {
-  overflow: hidden !important;
+  overflow: visible !important;
   padding-bottom: 18px !important;
 }
 
@@ -3622,6 +3622,23 @@ body.title-menu-open .titleHero .titleSingle {
 body.title-menu-open .titleHero .titleCatch {
   font-size: clamp(11px, 3vw, 14px) !important;
   margin-top: 10px !important;
+}
+
+@media (max-width: 480px) {
+  .titleHero {
+    padding-bottom: 12px !important;
+  }
+
+  .titleHero .titleCatch {
+    max-width: 100% !important;
+    padding: 0 6px !important;
+    font-size: clamp(10px, 3.4vw, 12px) !important;
+    line-height: 1.32 !important;
+  }
+
+  body.title-menu-open .titleHero .titleCatch {
+    font-size: clamp(9.5px, 3.2vw, 11.5px) !important;
+  }
 }
 
 @media (max-height: 760px) {
