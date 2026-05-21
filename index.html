@@ -4348,6 +4348,23 @@ function tone(freq, duration = .08, type = "square", volume = .035) {
 function sfx(type) {
   initAudio();
 
+  // スマホ対策：
+  // AudioContext が suspended の場合、再開してからもう一度SEを鳴らす
+  if (audioCtx && audioCtx.state === "suspended") {
+    audioCtx.resume()
+      .then(() => {
+        playSfxNow(type);
+      })
+      .catch(() => {});
+    return;
+  }
+
+  if (!audioCtx || audioCtx.state !== "running") return;
+
+  playSfxNow(type);
+}
+
+function playSfxNow(type) {
   if (!audioCtx || audioCtx.state !== "running") return;
 
   if (type === "select") {
