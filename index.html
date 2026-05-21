@@ -4396,6 +4396,7 @@ let currentMusic = null;
 let musicToken = 0;
 let bgmGainNode = null;
 const bgmSourceMap = new WeakMap();
+let musicTransitionPromise = Promise.resolve();
 
 const VOLUME_KEY = "kq_volume_v1";
 const MUTE_KEY = "kq_mute_v1";
@@ -4588,6 +4589,38 @@ function stopAllMusic(resetTime = true) {
   currentMusic = null;
 }
 
+async function fadeOutAndStopTrack(audio, durationMs = 220) {
+  if (!audio) return;
+
+  // すでに停止済みなら何もしない
+  if (audio.paused) {
+    try {
+      audio.currentTime = 0;
+      audio.muted = true;
+    } catch (e) {}
+    return;
+  }
+
+  const startVolume = Number.isFinite(audio.volume) ? audio.volume : 1;
+  const steps = 8;
+  const stepMs = Math.max(10, Math.floor(durationMs / steps));
+
+  for (let i = 1; i <= steps; i++) {
+    const ratio = 1 - i / steps;
+    try {
+      audio.volume = Math.max(0, startVolume * ratio);
+    } catch (e) {}
+    await wait(stepMs);
+  }
+
+  try {
+    audio.pause();
+    audio.currentTime = 0;
+    audio.muted = true;
+    audio.volume = 1;
+  } catch (e) {}
+}
+
 async function playMusic(audio, restart = false) {
   if (!audio) return;
 
@@ -4613,20 +4646,27 @@ async function playMusic(audio, restart = false) {
 
   const token = ++musicToken;
 
-  // 全BGMをいったん確実に止める
-  // スマホで前のBGMの冒頭だけが重なる問題への対策
+  // 連打や連続遷移でもBGM切替を直列化し、二重再生を防ぐ
+  const previousTransition = musicTransitionPromise;
+  let releaseTransition;
+  musicTransitionPromise = new Promise(resolve => {
+    releaseTransition = resolve;
+  });
+  await previousTransition;
+
+  // いま鳴っている曲は短くフェードアウトしてから停止
+  if (currentMusic && currentMusic !== audio) {
+    await fadeOutAndStopTrack(currentMusic, 220);
+  }
+
+  // 全BGMをいったん確実に止める（残留再生対策）
   getAllMusicTracks().forEach(track => {
     if (!track) return;
-
     try {
       track.pause();
-
-      // 別の曲に切り替える時だけ、再生位置を先頭に戻す
-      // 同じ曲を継続する場合はここに来ない
       if (track !== audio || restart) {
         track.currentTime = 0;
       }
-
       track.muted = true;
       track.loop = true;
       track.playbackRate = 1;
@@ -4636,7 +4676,10 @@ async function playMusic(audio, restart = false) {
   });
 
   // 途中で別のBGM命令が来ていたら、この再生は中止
-  if (token !== musicToken) return;
+  if (token !== musicToken) {
+    releaseTransition();
+    return;
+  }
 
   currentMusic = audio;
 
@@ -4675,6 +4718,8 @@ async function playMusic(audio, restart = false) {
     audio.muted = musicMuted;
   } catch (e) {
     console.log("BGMは最初のタップ後に再生されます。");
+  } finally {
+    releaseTransition();
   }
 }
 
