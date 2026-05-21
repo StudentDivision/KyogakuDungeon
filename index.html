@@ -3528,7 +3528,8 @@ body.title-menu-open .titleHero .titleSingle {
 .partnerPopText {
   font-size: 13px;
   line-height: 1.7;
-  font-weight: 700;
+  font-weight: 500;
+  letter-spacing: .02em;
   white-space: pre-wrap;
 }
 
@@ -3705,7 +3706,8 @@ body.title-menu-open .titleHero .titleCatch {
 #partnerMessageOverlay.partner-opening .partnerPopText {
   font-size: clamp(15px, 4.2vw, 20px);
   line-height: 1.65;
-  font-weight: 900;
+  font-weight: 600;
+  letter-spacing: .02em;
 }
 
 #partnerMessageOverlay.partner-opening .partnerPopBtn {
@@ -4354,9 +4356,10 @@ function sfx(type) {
   }
 
   if (type === "correct") {
-    tone(660, .08);
-    setTimeout(() => tone(880, .08), 80);
-    setTimeout(() => tone(1320, .12), 160);
+    tone(784, .07, "triangle", .08);
+    setTimeout(() => tone(988, .08, "sine", .09), 55);
+    setTimeout(() => tone(1318, .09, "triangle", .1), 110);
+    setTimeout(() => tone(1568, .14, "sine", .11), 180);
   }
 
   if (type === "wrong") {
@@ -4376,9 +4379,10 @@ function sfx(type) {
   }
 
   if (type === "level") {
-    [523, 587, 659, 784, 1046].forEach((n, i) => {
-      setTimeout(() => tone(n, .08), i * 80);
+    [659, 784, 988, 1174, 1318].forEach((n, i) => {
+      setTimeout(() => tone(n, .09, "triangle", .1), i * 70);
     });
+    setTimeout(() => tone(1760, .16, "sine", .12), 360);
   }
 
   if (type === "gameover") {
