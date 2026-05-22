@@ -5660,8 +5660,6 @@ async function showBossEntrance(enemy) {
 
   await wait(500);
 
-  await showPartnerMessage("boss");
-
   await showMessage(
     `${enemy.name}が あらわれた！\n` +
     "ここからは 少し難しい問題です。"
@@ -5831,9 +5829,6 @@ async function handleCorrect() {
 
   await showMessage(`${currentEnemy.name}に\n${damage}の ダメージ！`);
 
-// 正解時、たまに相棒が励ます
-  await maybePartnerMessage("correct", 0.18);
-
   if (currentEnemy.hp <= 0) {
     await defeatEnemy();
   } else {
@@ -5860,16 +5855,9 @@ async function handleWrong(index) {
     await showMessage(`ざんねん！\n正解は「${correctText}」。\n${currentQuiz.explanation}`);
   }
 
-// 不正解時、少し高めの確率で相棒が励ます
-  await maybePartnerMessage("wrong", 0.32);
-
 // 2連続ミスなら強攻撃
   const isPowerAttack = player.missStreak >= 2;
   await enemyAttack(isPowerAttack);
-
-if (player.hp > 0 && player.hp <= player.maxHp * 0.35) {
-  await maybePartnerMessage("lowHp", 0.45);
-}
 }
 
 async function enemyAttack(isPowerAttack = false) {
