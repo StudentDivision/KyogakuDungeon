@@ -3726,6 +3726,14 @@ body.title-menu-open .titleHero .titleCatch {
     line-height: 1.55;
   }
 }
+
+/* =========================================================
+  相棒能力表示
+========================================================= */
+
+.partnerPreviewDesc {
+  white-space: pre-line !important;
+}
   
 </style>
 </head>
@@ -5064,6 +5072,52 @@ function getCurrentPartner() {
   return getPartnerById(player.partnerId);
 }
 
+function getCurrentPartnerAbility() {
+  const partner = getCurrentPartner();
+  return partner?.ability || null;
+}
+
+function getAdjustedQuizTime(baseTime) {
+  const ability = getCurrentPartnerAbility();
+
+  // ヒカリ：回答時間延長
+  if (ability?.type === "timeBonus") {
+    return Math.ceil(baseTime * ability.rate);
+  }
+
+  return baseTime;
+}
+
+function getPartnerDamageMultiplier() {
+  const ability = getCurrentPartnerAbility();
+
+  // ソラ：連続正解で攻撃倍率アップ
+  if (ability?.type !== "comboBoost") {
+    return 1;
+  }
+
+  const combo = player.combo || 0;
+
+  // 1コンボ目は等倍、2コンボ目から上昇
+  const bonusSteps = Math.max(0, combo - 1);
+  const multiplier = 1 + bonusSteps * ability.step;
+
+  return Math.min(ability.max, multiplier);
+}
+
+function tryPartnerInstantKill(enemy) {
+  const ability = getCurrentPartnerAbility();
+
+  // レオ：たまに一撃必殺
+  if (ability?.type !== "instantKill") {
+    return false;
+  }
+
+  const rate = enemy.boss ? ability.bossRate : ability.rate;
+
+  return Math.random() < rate;
+}
+
 function pickPartnerLine(partner, type) {
   const list = partner?.lines?.[type] || partner?.lines?.start || [];
   if (!list.length) return "";
@@ -5087,7 +5141,8 @@ function showPartnerSelect() {
 
       partnerPreviewName.textContent = `${partner.species} ${partner.name}`;
       partnerPreviewCatch.textContent = partner.catch;
-      partnerPreviewDesc.textContent = partner.personality;
+      partnerPreviewDesc.textContent =
+      `${partner.personality}\n\n特性：${partner.abilityName}\n${partner.abilityDesc}`;
 
       partnerListEl.querySelectorAll("[data-partner-id]").forEach(btn => {
         btn.classList.toggle("is-active", btn.dataset.partnerId === selectedPartnerId);
@@ -5505,6 +5560,13 @@ const partnerList = [
     image: "assets/partners/partner_eagle.png",
     openingImage: "assets/partners/opening_eagle.png",
     personality: "明るく前向き。迷った時に背中を押してくれる。",
+    abilityName: "希望の飛翔",
+    abilityDesc: "連続正解するほど攻撃力が上がる。最大1.5倍。",
+    ability: {
+    type: "comboBoost",
+    step: 0.08,
+    max: 1.5
+    },
     lines: {
       start: [
         "一緒に行こう！\n空はまだまだ広いよ！",
@@ -5537,6 +5599,13 @@ const partnerList = [
     image: "assets/partners/partner_lion.png",
     openingImage: "assets/partners/opening_lion.png",
     personality: "堂々として熱い。ピンチの時に勇気をくれる。",
+    abilityName: "獅子の雄叫び",
+    abilityDesc: "正解時、10%の確率で通常敵を一撃で倒す。ボスには5%。",
+    ability: {
+    type: "instantKill",
+    rate: 0.10,
+    bossRate: 0.05
+    },
     lines: {
       start: [
         "さあ、胸を張って進もう！",
@@ -5569,6 +5638,12 @@ const partnerList = [
     image: "assets/partners/partner_horse.png",
     openingImage: "assets/partners/opening_horse.png",
     personality: "穏やかで誠実。焦った時に心を整えてくれる。",
+    abilityName: "静かな導き",
+    abilityDesc: "回答時間が1.35倍になる。",
+    ability: {
+    type: "timeBonus",
+    rate: 1.35
+    },
     lines: {
       start: [
         "まっすぐ進みましょう。\nあなたの道には、光があります。",
@@ -6001,7 +6076,9 @@ function startQuestion() {
   });
 
   setQuizEnabled(true);
-  startTimer(currentQuiz.challenge ? 18 : 13);
+
+  const baseTime = currentQuiz.challenge ? 18 : 13;
+  startTimer(getAdjustedQuizTime(baseTime));
 }
 
 function startTimer(seconds) {
@@ -6065,24 +6142,50 @@ async function handleCorrect() {
   const expGain = currentQuiz.challenge ? 18 : 7;
   player.exp += expGain;
 
-  const baseDamage = player.quizPower + player.attack + rand(6, 12);
-  const comboBonus = Math.min(40, player.combo * 3);
-  const challengeBonus = currentQuiz.challenge ? 18 : 0;
-  const damage = baseDamage + comboBonus + challengeBonus;
+const baseDamage = player.quizPower + player.attack + rand(6, 12);
+const comboBonus = Math.min(40, player.combo * 3);
+const challengeBonus = currentQuiz.challenge ? 18 : 0;
 
-  player.score += currentQuiz.challenge ? 300 : 100;
-  player.score += player.combo * 10;
+let damage = baseDamage + comboBonus + challengeBonus;
 
-  await showMessage(`正解！\n${currentQuiz.explanation}`);
-  await checkLevelUp();
+// ソラ：連続正解で攻撃倍率アップ
+const partnerMultiplier = getPartnerDamageMultiplier();
 
-  currentEnemy.hp -= damage;
-  animateEnemyDamage();
+if (partnerMultiplier > 1) {
+  damage = Math.floor(damage * partnerMultiplier);
+  playFlash(`追い風 ×${partnerMultiplier.toFixed(2)}`, "showLevel");
+}
 
-  sfx("damage");
-  updateUI();
+// レオ：たまに一撃必殺
+let instantKill = false;
 
+if (tryPartnerInstantKill(currentEnemy)) {
+  damage = currentEnemy.hp;
+  instantKill = true;
+}
+
+player.score += currentQuiz.challenge ? 300 : 100;
+player.score += player.combo * 10;
+
+await showMessage(`正解！\n${currentQuiz.explanation}`);
+await checkLevelUp();
+
+currentEnemy.hp -= damage;
+animateEnemyDamage();
+
+sfx("damage");
+updateUI();
+
+if (instantKill) {
+  playFlash("一閃！", "showLevel");
+
+  await showMessage(
+    `レオの勇気が燃え上がった！\n` +
+    `${currentEnemy.name}に 必殺の一撃！`
+  );
+} else {
   await showMessage(`${currentEnemy.name}に\n${damage}の ダメージ！`);
+}
 
   if (currentEnemy.hp <= 0) {
     await defeatEnemy();
