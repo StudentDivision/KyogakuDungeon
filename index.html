@@ -3734,6 +3734,11 @@ body.title-menu-open .titleHero .titleCatch {
 .partnerPreviewDesc {
   white-space: pre-line !important;
 }
+
+.titleSubButtons #surveyBtn,
+.titleSubButtons #deleteBtn {
+  grid-column: auto !important;
+}
   
 </style>
 </head>
@@ -3792,6 +3797,7 @@ body.title-menu-open .titleHero .titleCatch {
   <div class="titleSubButtons">
     <button id="historyBtn" class="titleBtn subBtn">スコア履歴</button>
     <button id="achievementBtn" class="titleBtn subBtn">称号・記録</button>
+    <button id="surveyBtn" class="titleBtn subBtn">アンケート</button>
     <button id="deleteBtn" class="titleBtn subBtn">セーブ削除</button>
   </div>
 
@@ -4043,7 +4049,10 @@ const endlessContinueBtn = $("endlessContinueBtn");
 const historyBtn = $("historyBtn");
 const deleteBtn = $("deleteBtn");
 const achievementBtn = $("achievementBtn");
+const surveyBtn = $("surveyBtn");
 const clearBadge = $("clearBadge");
+
+const SURVEY_URL = "https://forms.gle/XrWZnKnLJ4QcZqa29";
 
 const volumeSlider = $("volumeSlider");
 const volumeText = $("volumeValue");
@@ -6945,6 +6954,13 @@ endlessContinueBtn.addEventListener("click", continueEndlessGame);
 historyBtn.addEventListener("click", showHistory);
 achievementBtn.addEventListener("click", showAchievements);
 rewardPopupCloseBtn.addEventListener("click", closeRewardPopup);
+
+surveyBtn.addEventListener("click", () => {
+  initAudio();
+  sfx("select");
+
+  window.open(SURVEY_URL, "_blank", "noopener,noreferrer");
+});
 
 rewardPopup.addEventListener("click", (e) => {
   if (e.target.classList.contains("rewardPopupBackdrop")) {
